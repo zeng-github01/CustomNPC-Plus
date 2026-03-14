@@ -109,6 +109,7 @@ public class VersionCompatibility {
                 int x = ((NBTTagInt) list.removeTag(0)).func_150287_d();
 
                 compound.setIntArray("StartPosNew", new int[]{x, y, z});
+                CheckVisibleCompatibility(compound);
             }
         }
         if (npc.npcVersion == 13) {
@@ -219,6 +220,15 @@ public class VersionCompatibility {
                 compound.setTag(name, nbt);
             } else if (nbt instanceof NBTTagCompound && compound.getTag(name) instanceof NBTTagCompound) {
                 CompatabilityFix(compound.getCompoundTag(name), (NBTTagCompound) nbt);
+            }
+        }
+    }
+
+    private static void CheckVisibleCompatibility(NBTTagCompound compound) {
+        if (compound.hasKey("NpcVisible")) {
+            int visible = compound.getInteger("NpcVisible");
+            if (visible == 1) {
+                compound.setInteger("NpcVisible", 2);
             }
         }
     }
