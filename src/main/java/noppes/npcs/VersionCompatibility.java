@@ -109,6 +109,8 @@ public class VersionCompatibility {
                 int x = ((NBTTagInt) list.removeTag(0)).func_150287_d();
 
                 compound.setIntArray("StartPosNew", new int[]{x, y, z});
+                // In older versions, a bug made NpcVisible values 1 and 2 behave identically.
+                // For backward compatibility, treat legacy value 1 as 2 to preserve the intended visible state.
                 CheckVisibleCompatibility(compound);
             }
         }
