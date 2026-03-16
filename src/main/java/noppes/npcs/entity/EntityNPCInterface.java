@@ -1539,8 +1539,8 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
             }
             droppedXp = event.expDropped;
 
+            inventory.dropItems(entity, droppedItems);
             if (this.recentlyHit > 0) {
-                inventory.dropItems(entity, droppedItems);
                 inventory.dropXp(entity, droppedXp);
             }
             Line line = advanced.getKilledLine();
