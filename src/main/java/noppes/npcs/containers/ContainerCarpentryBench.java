@@ -12,9 +12,11 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.inventory.SlotCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.server.S2FPacketSetSlot;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import noppes.npcs.CustomItems;
 import noppes.npcs.EventHooks;
+import noppes.npcs.blocks.tiles.TileBlockAnvil;
 import noppes.npcs.controllers.RecipeController;
 import noppes.npcs.controllers.data.RecipeCarpentry;
 import noppes.npcs.scripted.event.RecipeScriptEvent;
@@ -58,12 +60,21 @@ public class ContainerCarpentryBench extends Container {
         for (var6 = 0; var6 < 9; ++var6) {
             this.addSlotToContainer(new Slot(par1InventoryPlayer, var6, 8 + var6 * 18, 156));
         }
-
+        restoreCraftMatrix();
         this.onCraftMatrixChanged(this.craftMatrix);
     }
 
     public int getMetadata() {
         return worldObj.getBlockMetadata(posX, posY, posZ);
+    }
+
+    private void restoreCraftMatrix() {
+        TileEntity tileEntity = worldObj.getTileEntity(posX, posY, posZ);
+        if (tileEntity instanceof TileBlockAnvil) {
+            for (int i = 0; i < ((TileBlockAnvil) tileEntity).items.length; i++) {
+                craftMatrix.setInventorySlotContents(i, ((TileBlockAnvil) tileEntity).items[i]);
+            }
+        }
     }
 
     /**
@@ -108,13 +119,14 @@ public class ContainerCarpentryBench extends Container {
         super.onContainerClosed(par1EntityPlayer);
 
         if (!this.worldObj.isRemote) {
+            TileEntity tileEntity = worldObj.getTileEntity(posX, posY, posZ);
             for (int var2 = 0; var2 < 16; ++var2) {
                 ItemStack var3 = this.craftMatrix.getStackInSlotOnClosing(var2);
-
-                if (var3 != null) {
-                    par1EntityPlayer.dropPlayerItemWithRandomChoice(var3, false);
+                if (tileEntity instanceof TileBlockAnvil) {
+                    ((TileBlockAnvil) tileEntity).items[var2] = var3;
                 }
             }
+            tileEntity.markDirty();
         }
     }
 
