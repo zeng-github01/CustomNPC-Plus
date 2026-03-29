@@ -161,6 +161,14 @@ public class VersionCompatibility {
                     compound.setInteger("NpcJob", 0);
                 }
             }
+
+            if (compound.hasKey("SkinColor")) {
+                int skinColor = compound.getInteger("SkinColor");
+                if (skinColor != 16777215) {
+                    compound.setInteger("generalTint", skinColor);
+                    compound.setBoolean("GeneralTintEnabled", true);
+                }
+            }
         }
         if (npc.npcVersion == 13) {
             boolean bo = compound.getBoolean("HealthRegen");
