@@ -153,6 +153,14 @@ public class VersionCompatibility {
 
                 compound.setTag("MovingPathNew", finalList);
             }
+
+            if (compound.hasKey("NpcJob")) {
+                int npcJob = compound.getInteger("NpcJob");
+                if (npcJob == 5) {
+                    compound.setByte("BossBar", (byte) 1);
+                    compound.setInteger("NpcJob", 0);
+                }
+            }
         }
         if (npc.npcVersion == 13) {
             boolean bo = compound.getBoolean("HealthRegen");
