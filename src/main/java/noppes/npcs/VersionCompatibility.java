@@ -1,9 +1,7 @@
 package noppes.npcs;
 
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagInt;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.*;
+import net.minecraftforge.common.util.Constants;
 import noppes.npcs.controllers.data.Line;
 import noppes.npcs.controllers.data.Lines;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -109,6 +107,14 @@ public class VersionCompatibility {
                 int x = ((NBTTagInt) list.removeTag(0)).func_150287_d();
 
                 compound.setIntArray("StartPosNew", new int[]{x, y, z});
+            }
+
+            if (compound.hasKey("NpcJob")) {
+                int npcJob = compound.getInteger("NpcJob");
+                if (npcJob == 5) {
+                    compound.setByte("BossBar", (byte) 1);
+                    compound.setInteger("NpcJob", 0);
+                }
             }
         }
         if (npc.npcVersion == 13) {
