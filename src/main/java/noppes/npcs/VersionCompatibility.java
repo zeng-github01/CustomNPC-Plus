@@ -56,6 +56,14 @@ public class VersionCompatibility {
                 compound.removeTag("FiringDelay");
                 compound.removeTag("DelayVariance");
             }
+
+            if (compound.hasKey("pEffect")) {
+                int effect = compound.getInteger("pEffect");
+                EnumPotionType enumPotionType = EnumPotionType.fromOrdinal(effect);
+                if (enumPotionType == EnumPotionType.Fire) {
+                    compound.setBoolean("pBurnItem", true);
+                }
+            }
         }
         if (npc.npcVersion < 12) {
             CompatabilityFix(compound, npc.advanced.writeToNBT(new NBTTagCompound()));
