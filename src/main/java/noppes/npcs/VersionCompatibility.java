@@ -2,6 +2,7 @@ package noppes.npcs;
 
 import net.minecraft.nbt.*;
 import net.minecraftforge.common.util.Constants;
+import noppes.npcs.constants.EnumPotionType;
 import noppes.npcs.controllers.data.Line;
 import noppes.npcs.controllers.data.Lines;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -165,7 +166,9 @@ public class VersionCompatibility {
             if (compound.hasKey("SkinColor")) {
                 int skinColor = compound.getInteger("SkinColor");
                 if (skinColor != 16777215) {
-                    compound.setInteger("generalTint", skinColor);
+                    compound.setBoolean("TintEnabled", true);
+                    compound.setInteger("GeneralTint", skinColor);
+                    compound.setInteger("GeneralAlpha", 100);
                     compound.setBoolean("GeneralTintEnabled", true);
                 }
             }
