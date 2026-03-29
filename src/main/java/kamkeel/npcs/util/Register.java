@@ -26,7 +26,7 @@ public class Register<T> {
     protected final String namespace;
     protected final Map<String, Supplier<T>> entries = new LinkedHashMap<>();
 
-    private Register(String registryKey, String namespace) {
+    public Register(String registryKey, String namespace) {
         this.registryKey = registryKey;
         this.namespace = namespace;
     }
@@ -34,6 +34,31 @@ public class Register<T> {
     public T register(String factoryName, Supplier<T> factory) {
         entries.put(registryKey + "." + namespace + "." + factoryName, factory);
         return factory.get();
+    }
+
+    public Map<String, Supplier<T>> getEntries() {
+        return entries;
+    }
+
+    public void forEach(Consumer<T> action) {
+        entries.values().forEach(s -> action.accept(s.get()));
+    }
+
+    public static <T> Register<T> create(String registryKey, String namespace, String displayName) {
+        registerNamespace(registryKey, namespace, displayName);
+        return new Register<>(registryKey, namespace);
+    }
+
+    public static void registerNamespace(String registryKey, String namespace, String displayName) {
+        if (!REGISTERED_NAMESPACES.containsKey(registryKey))
+            REGISTERED_NAMESPACES.put(registryKey, new ArrayList<>());
+
+        if (REGISTERED_NAMESPACES.get(registryKey).contains(namespace)) {
+            LogWriter.error("REGISTER: Namespace " + namespace + " already registered for registry " + registryKey + "!");
+        }
+
+        REGISTERED_NAMESPACES.get(registryKey).add(namespace);
+        NAMESPACE_DISPLAY_NAMES.put(namespace, displayName);
     }
 
     public static boolean isEmpty(String registryKey) {
