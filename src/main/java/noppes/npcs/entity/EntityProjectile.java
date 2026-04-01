@@ -39,6 +39,7 @@ import noppes.npcs.api.IPos;
 import noppes.npcs.api.IWorld;
 import noppes.npcs.api.entity.IEntity;
 import noppes.npcs.api.entity.IProjectile;
+import noppes.npcs.config.ConfigExperimental;
 import noppes.npcs.constants.EnumParticleType;
 import noppes.npcs.constants.EnumPotionType;
 import noppes.npcs.controllers.ScriptContainer;
@@ -570,70 +571,77 @@ public class EntityProjectile extends EntityThrowable {
         }
 
 
-        if (explosive) {
+        if (this.explosive) {
             if (this.explosiveRadius != 0 || this.effect == EnumPotionType.None) {
-                boolean terraindamage = this.worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing") && explosiveDamage && destroyTerrain;
-                Explosion explosion = new Explosion(worldObj, this, posX, posY, posZ, explosiveRadius);
-                explosion.isFlaming = this.effect == EnumPotionType.Fire;
-                explosion.isSmoking = terraindamage;
-                if (terraindamage)
-                    explosion.doExplosionA();
-                explosion.doExplosionB(worldObj.isRemote);
-                //this.worldObj.newExplosion(null, this.posX, this.posY, this.posZ, this.explosiveRadius, this.effect == EnumPotionType.Fire, this.worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing") && explosiveDamage);
-                if (!worldObj.isRemote) {
-                    Iterator iterator = worldObj.playerEntities.iterator();
 
-                    while (iterator.hasNext()) {
-                        EntityPlayer entityplayer = (EntityPlayer) iterator.next();
-                        if (entityplayer.getDistanceSq(posX, posY, posZ) < 4096.0D) {
-                            ((EntityPlayerMP) entityplayer).playerNetServerHandler.sendPacket(new S27PacketExplosion(posX, posY, posZ, explosiveRadius, explosion.affectedBlockPositions, (Vec3) explosion.func_77277_b().get(entityplayer)));
+                boolean canGrief = this.worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing") && explosiveDamage;
+
+                if (ConfigExperimental.useLegacyExplosion) {
+                    this.worldObj.newExplosion(null, this.posX, this.posY, this.posZ, (float)this.explosiveRadius, this.effect == EnumPotionType.Fire, canGrief);
+
+                } else {
+                    boolean terraindamage = canGrief && destroyTerrain;
+
+                    Explosion explosion = new Explosion(this.worldObj, this, this.posX, this.posY, this.posZ, (float)this.explosiveRadius);
+                    explosion.isFlaming = this.effect == EnumPotionType.Fire;
+                    explosion.isSmoking = terraindamage;
+
+                    if (terraindamage) {
+                        explosion.doExplosionA();
+                    }
+                    explosion.doExplosionB(this.worldObj.isRemote);
+
+                    if (!this.worldObj.isRemote) {
+                        for (Object playerObj : this.worldObj.playerEntities) {
+                            if (playerObj instanceof EntityPlayerMP) {
+                                EntityPlayerMP entityplayer = (EntityPlayerMP) playerObj;
+                                if (entityplayer.getDistanceSq(this.posX, this.posY, this.posZ) < 4096.0D) {
+                                    Vec3 knockback = (Vec3) explosion.func_77277_b().get(entityplayer);
+
+                                    entityplayer.playerNetServerHandler.sendPacket(new S27PacketExplosion(
+                                        this.posX, this.posY, this.posZ, this.explosiveRadius,
+                                        explosion.affectedBlockPositions,
+                                        knockback
+                                    ));
+                                }
+                            }
                         }
                     }
                 }
-                if (this.explosiveRadius != 0 && (this.isArrow() || this.sticksToWalls()))
+
+                if (this.explosiveRadius != 0 && (this.isArrow() || this.sticksToWalls())) {
                     this.setDead();
+                }
+
             } else if (this.effect == EnumPotionType.Fire) {
                 int i = movingobjectposition.blockX;
                 int j = movingobjectposition.blockY;
                 int k = movingobjectposition.blockZ;
 
                 switch (movingobjectposition.sideHit) {
-                    case 0:
-                        --j;
-                        break;
-                    case 1:
-                        ++j;
-                        break;
-                    case 2:
-                        --k;
-                        break;
-                    case 3:
-                        ++k;
-                        break;
-                    case 4:
-                        --i;
-                        break;
-                    case 5:
-                        ++i;
+                    case 0: --j; break;
+                    case 1: ++j; break;
+                    case 2: --k; break;
+                    case 3: ++k; break;
+                    case 4: --i; break;
+                    case 5: ++i;
                 }
 
                 if (this.worldObj.isAirBlock(i, j, k)) {
                     this.worldObj.setBlock(i, j, k, Blocks.fire);
                 }
+
             } else {
                 AxisAlignedBB axisalignedbb = this.boundingBox.expand(4.0D, 2.0D, 4.0D);
-                List list1 = this.worldObj.getEntitiesWithinAABB(EntityLivingBase.class, axisalignedbb);
+
+                List<EntityLivingBase> list1 = this.worldObj.getEntitiesWithinAABB(EntityLivingBase.class, axisalignedbb);
 
                 if (list1 != null && !list1.isEmpty()) {
-                    Iterator iterator = list1.iterator();
-
-                    while (iterator.hasNext()) {
-                        EntityLivingBase entitylivingbase = (EntityLivingBase) iterator.next();
+                    for (EntityLivingBase entitylivingbase : list1) {
                         double d0 = this.getDistanceSqToEntity(entitylivingbase);
 
                         if (d0 < 16.0D) {
                             double d1 = 1.0D - Math.sqrt(d0) / 4.0D;
-
                             if (entitylivingbase == movingobjectposition.entityHit) {
                                 d1 = 1.0D;
                             }
@@ -644,22 +652,18 @@ public class EntityProjectile extends EntityThrowable {
                                 if (Potion.potionTypes[potionId].isInstant()) {
                                     Potion.potionTypes[potionId].affectEntity(this.getThrower(), entitylivingbase, this.amplify, d1);
                                 } else {
-                                    int j = (int) (d1 * (double) this.duration + 0.5D);
-
-                                    if (j > 20) {
-                                        entitylivingbase.addPotionEffect(new PotionEffect(potionId, j, this.amplify));
+                                    int durationCalc = (int) (d1 * (double) this.duration + 0.5D);
+                                    if (durationCalc > 20) {
+                                        entitylivingbase.addPotionEffect(new PotionEffect(potionId, durationCalc, this.amplify));
                                     }
                                 }
                             }
                         }
                     }
                 }
+
                 this.worldObj.playAuxSFX(2002, (int) Math.round(this.posX), (int) Math.round(this.posY), (int) Math.round(this.posZ), this.getPotionColor());
             }
-        }
-
-        if (!this.worldObj.isRemote && !this.isArrow() && !this.sticksToWalls()) {
-            this.setDead();
         }
     }
 
