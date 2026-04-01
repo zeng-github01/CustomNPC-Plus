@@ -110,6 +110,10 @@ public class VersionCompatibility {
 
                 compound.setIntArray("StartPosNew", new int[]{x, y, z});
             }
+
+            if (!compound.getString("GlowTexture").isEmpty() && compound.getInteger("NpcVisible") == 1) {
+                compound.setInteger("NpcVisible", 2);
+            }
         }
         if (npc.npcVersion == 13) {
             boolean bo = compound.getBoolean("HealthRegen");
