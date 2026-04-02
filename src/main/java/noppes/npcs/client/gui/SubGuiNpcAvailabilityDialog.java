@@ -112,19 +112,19 @@ public class SubGuiNpcAvailabilityDialog extends SubGuiInterface implements GuiS
         }
         if (button.id == 10) {
             slot = 1;
-            setSubGui(new GuiDialogSelection(availabitily.questId));
+            setSubGui(new GuiDialogSelection(availabitily.dialogId));
         }
         if (button.id == 11) {
             slot = 2;
-            setSubGui(new GuiDialogSelection(availabitily.quest2Id));
+            setSubGui(new GuiDialogSelection(availabitily.dialog2Id));
         }
         if (button.id == 12) {
             slot = 3;
-            setSubGui(new GuiDialogSelection(availabitily.quest3Id));
+            setSubGui(new GuiDialogSelection(availabitily.dialog3Id));
         }
         if (button.id == 13) {
             slot = 4;
-            setSubGui(new GuiDialogSelection(availabitily.quest4Id));
+            setSubGui(new GuiDialogSelection(availabitily.dialog4Id));
         }
         if (button.id == 20) {
             availabitily.dialogId = -1;
