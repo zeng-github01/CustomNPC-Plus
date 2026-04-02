@@ -16,6 +16,8 @@ public class ConfigExperimental {
     public static boolean ModernGuiSystem = false;
     public static Property useLegacyExplosionProperty;
     public static boolean useLegacyExplosion = false;
+    public static Property LegacyDropProperty;
+    public static boolean LegacyDrop = false;
 
 
     public static void init(File configFile) {
@@ -28,6 +30,8 @@ public class ConfigExperimental {
             ModernGuiSystem = ModernGuiSystemProperty.getBoolean(false);
             useLegacyExplosionProperty = config.get(SERVER, "Use Legacy Explosion", false);
             useLegacyExplosion = useLegacyExplosionProperty.getBoolean(false);
+            LegacyDropProperty = config.get(SERVER, "Use Legacy DropItem for npc", false, "Use Legacy Drop Item for NPCs for compatibility");
+            LegacyDrop = LegacyDropProperty.getBoolean(false);
         } catch (Exception e) {
             FMLLog.log(Level.ERROR, e, "CNPC+ has had a problem loading its experimental configuration");
         } finally {
