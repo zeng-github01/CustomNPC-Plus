@@ -1,10 +1,14 @@
 package noppes.npcs;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.nbt.*;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import noppes.npcs.constants.EnumPotionType;
 import noppes.npcs.controllers.data.Line;
 import noppes.npcs.controllers.data.Lines;
+import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.ModelRotate;
 
@@ -187,6 +191,24 @@ public class VersionCompatibility {
 
         }
         npc.npcVersion = ModRev;
+    }
+
+    public static void CheckSpawnerCompatibility(NBTTagCompound compound, int x, int y, int z, World world) {
+        for (int i = 1; i <= 6; i++) {
+            NBTTagCompound tag = compound.getCompoundTag("SpawnerNBT" + i);
+            if (tag.hasNoTags() || tag.getInteger("ModRev") == ModRev) continue;
+            if (tag.getInteger("ModRev") < 14 ) {
+                String oldID = tag.getString("id");
+                tag.setString("id", "customnpcs.CustomNpc");
+                Entity entity = NoppesUtilServer.getEntityFromNBT(tag, x, y, z, world);
+                if (entity instanceof EntityCustomNpc) {
+                    Class<?> clazz = (Class<?>) EntityList.stringToClassMapping.get(oldID);
+                    ((EntityCustomNpc) entity).modelData.setEntity(clazz.getName());
+                    entity.writeToNBT(tag);
+                }
+                compound.setTag("SpawnerNBT" + i, tag);
+            }
+        }
     }
 
     public static void CheckModelCompatibility(EntityNPCInterface npc, NBTTagCompound compound) {
