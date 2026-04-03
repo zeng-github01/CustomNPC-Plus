@@ -204,7 +204,12 @@ public class VersionCompatibility {
                 if (entity instanceof EntityCustomNpc) {
                     Class<?> clazz = (Class<?>) EntityList.stringToClassMapping.get(oldID);
                     ((EntityCustomNpc) entity).modelData.setEntity(clazz.getName());
+                    ((EntityCustomNpc) entity).modelData.modelScale.legs.setScale(1,1,1);
+                    ((EntityCustomNpc) entity).modelData.modelScale.head.setScale(1,1,1);
+                    ((EntityCustomNpc) entity).modelData.modelScale.body.setScale(1,1,1);
+                    ((EntityCustomNpc) entity).modelData.modelScale.arms.setScale(1,1,1);
                     entity.writeToNBT(tag);
+                    entity.setDead();
                 }
                 compound.setTag("SpawnerNBT" + i, tag);
             }
