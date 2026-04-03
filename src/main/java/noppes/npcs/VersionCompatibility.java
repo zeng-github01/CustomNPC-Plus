@@ -14,6 +14,7 @@ import noppes.npcs.entity.data.ModelRotate;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public class VersionCompatibility {
     public static int ModRev = 23;
@@ -201,17 +202,18 @@ public class VersionCompatibility {
                 String oldID = tag.getString("id");
                 tag.setString("id", "customnpcs.CustomNpc");
                 Entity entity = NoppesUtilServer.getEntityFromNBT(tag, x, y, z, world);
-                if (entity instanceof EntityCustomNpc) {
+                NBTTagCompound fixed = new NBTTagCompound();
+                if (entity instanceof EntityCustomNpc && !Objects.equals(oldID, "customnpcs.CustomNpc")) {
                     Class<?> clazz = (Class<?>) EntityList.stringToClassMapping.get(oldID);
                     ((EntityCustomNpc) entity).modelData.setEntity(clazz.getName());
                     ((EntityCustomNpc) entity).modelData.modelScale.legs.setScale(1,1,1);
                     ((EntityCustomNpc) entity).modelData.modelScale.head.setScale(1,1,1);
                     ((EntityCustomNpc) entity).modelData.modelScale.body.setScale(1,1,1);
                     ((EntityCustomNpc) entity).modelData.modelScale.arms.setScale(1,1,1);
-                    entity.writeToNBT(tag);
-                    entity.setDead();
+                    entity.writeToNBT(fixed);
+//                    world.removeEntity(entity);
                 }
-                compound.setTag("SpawnerNBT" + i, tag);
+                compound.setTag("SpawnerNBT" + i, fixed);
             }
         }
     }
