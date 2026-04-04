@@ -1,20 +1,16 @@
 package noppes.npcs;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
 import net.minecraft.nbt.*;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import noppes.npcs.constants.EnumPotionType;
 import noppes.npcs.controllers.data.Line;
 import noppes.npcs.controllers.data.Lines;
-import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.ModelRotate;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
 public class VersionCompatibility {
     public static int ModRev = 23;
@@ -198,23 +194,9 @@ public class VersionCompatibility {
         for (int i = 1; i <= 6; i++) {
             NBTTagCompound tag = compound.getCompoundTag("SpawnerNBT" + i);
             if (tag.hasNoTags() || tag.getInteger("ModRev") == ModRev) continue;
-            if (tag.getInteger("ModRev") < 14 ) {
-                String oldID = tag.getString("id");
-                tag.setString("id", "customnpcs.CustomNpc");
-                Entity entity = NoppesUtilServer.getEntityFromNBT(tag, x, y, z, world);
-                NBTTagCompound fixed = new NBTTagCompound();
-                if (entity instanceof EntityCustomNpc && !Objects.equals(oldID, "customnpcs.CustomNpc")) {
-                    Class<?> clazz = (Class<?>) EntityList.stringToClassMapping.get(oldID);
-                    ((EntityCustomNpc) entity).modelData.setEntity(clazz.getName());
-                    ((EntityCustomNpc) entity).modelData.modelScale.legs.setScale(1,1,1);
-                    ((EntityCustomNpc) entity).modelData.modelScale.head.setScale(1,1,1);
-                    ((EntityCustomNpc) entity).modelData.modelScale.body.setScale(1,1,1);
-                    ((EntityCustomNpc) entity).modelData.modelScale.arms.setScale(1,1,1);
-                    entity.writeToNBT(fixed);
-//                    world.removeEntity(entity);
-                }
-                compound.setTag("SpawnerNBT" + i, fixed);
-            }
+
+            tag.setString("id", "customnpcs.CustomNpc");
+            compound.setTag("SpawnerNBT" + i, tag);
         }
     }
 
