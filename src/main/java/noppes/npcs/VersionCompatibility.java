@@ -195,16 +195,6 @@ public class VersionCompatibility {
         npc.npcVersion = ModRev;
     }
 
-    public static void CheckSpawnerCompatibility(NBTTagCompound compound, int x, int y, int z, World world) {
-        for (int i = 1; i <= 6; i++) {
-            NBTTagCompound tag = compound.getCompoundTag("SpawnerNBT" + i);
-            if (tag.hasNoTags() || tag.getInteger("ModRev") == ModRev) continue;
-
-            tag.setString("id", "customnpcs.CustomNpc");
-            compound.setTag("SpawnerNBT" + i, tag);
-        }
-    }
-
     public static void CheckModelCompatibility(EntityNPCInterface npc, NBTTagCompound compound) {
         if (npc.npcVersion == ModRev)
             return;

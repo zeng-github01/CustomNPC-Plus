@@ -101,7 +101,6 @@ public class JobSpawner extends JobInterface {
 
     @Override
     public void readFromNBT(NBTTagCompound compound) {
-        VersionCompatibility.CheckSpawnerCompatibility(compound, MathHelper.floor_double(npc.posX), MathHelper.floor_double(npc.posY), MathHelper.floor_double(npc.posZ), npc.worldObj);
         compound1 = compound.getCompoundTag("SpawnerNBT1");
         compound2 = compound.getCompoundTag("SpawnerNBT2");
         compound3 = compound.getCompoundTag("SpawnerNBT3");
@@ -147,6 +146,10 @@ public class JobSpawner extends JobInterface {
 
     @Override
     public void aiUpdateTask() {
+        if (spawned.isEmpty()) {
+            spawned = getNearbySpawned();
+        }
+
         if (spawned.isEmpty()) {
             if (spawnType == 0) {
                 if (spawnEntity(number + 1) == null && !doesntDie)
