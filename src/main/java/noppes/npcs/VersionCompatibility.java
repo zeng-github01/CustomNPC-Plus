@@ -110,6 +110,10 @@ public class VersionCompatibility {
 
                 compound.setIntArray("StartPosNew", new int[]{x, y, z});
             }
+
+            if (compound.hasKey("SpawnerDoesntDie") && !compound.hasKey("DespawnOnTargetLost")) {
+                compound.setBoolean("DespawnOnTargetLost", true);
+            }
         }
         if (npc.npcVersion == 13) {
             boolean bo = compound.getBoolean("HealthRegen");
