@@ -177,6 +177,11 @@ public class VersionCompatibility {
             if (!compound.getString("GlowTexture").isEmpty() && compound.getInteger("NpcVisible") == 1) {
                 compound.setInteger("NpcVisible", 2);
             }
+
+            if (compound.hasKey("SpawnerDoesntDie") && !compound.hasKey("DespawnOnTargetLost") && !compound.getBoolean("DespawnOnSummmoner")) {
+                compound.setBoolean("DespawnOnTargetLost", true);
+                compound.setBoolean("DespawnOnSummoner", true);
+            }
         }
         if (npc.npcVersion == 13) {
             boolean bo = compound.getBoolean("HealthRegen");
