@@ -180,7 +180,6 @@ public class VersionCompatibility {
 
             if (compound.hasKey("SpawnerDoesntDie") && !compound.hasKey("DespawnOnTargetLost") && !compound.getBoolean("DespawnOnSummmoner")) {
                 compound.setBoolean("DespawnOnTargetLost", true);
-                compound.setBoolean("DespawnOnSummoner", true);
             }
         }
         if (npc.npcVersion == 13) {
