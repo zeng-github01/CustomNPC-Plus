@@ -111,8 +111,21 @@ public class ContainerNPCTrader extends ContainerNpcInterface {
         }
 
         // Consume item currency
-        NoppesUtilPlayer.consumeItem(entityplayer, role.inventoryCurrency.getStackInSlot(i), role.ignoreDamage, role.ignoreNBT);
-        NoppesUtilPlayer.consumeItem(entityplayer, role.inventoryCurrency.getStackInSlot(i + 18), role.ignoreDamage, role.ignoreNBT);
+        if (par3 != 1 && entityplayer.inventory.getFirstEmptyStack() != -1) {
+            NoppesUtilPlayer.consumeItem(entityplayer, role.inventoryCurrency.getStackInSlot(i), role.ignoreDamage, role.ignoreNBT);
+            NoppesUtilPlayer.consumeItem(entityplayer, role.inventoryCurrency.getStackInSlot(i + 18), role.ignoreDamage, role.ignoreNBT);
+            ItemStack soldItem = item.copy();
+            entityplayer.inventory.addItemStackToInventory(soldItem);
+            role.addPurchase(i, entityplayer.getDisplayName());
+        } else {
+            while(canBuy(i, entityplayer) && entityplayer.inventory.getFirstEmptyStack() != -1) {
+                NoppesUtilPlayer.consumeItem(entityplayer, role.inventoryCurrency.getStackInSlot(i), role.ignoreDamage, role.ignoreNBT);
+                NoppesUtilPlayer.consumeItem(entityplayer, role.inventoryCurrency.getStackInSlot(i + 18), role.ignoreDamage, role.ignoreNBT);
+                ItemStack soldItem = item.copy();
+                entityplayer.inventory.addItemStackToInventory(soldItem);
+                role.addPurchase(i, entityplayer.getDisplayName());
+            }
+        }
 
         // Withdraw currency cost (after item consumption to maintain order)
         if (currencyCost > 0) {
@@ -124,8 +137,6 @@ public class ContainerNPCTrader extends ContainerNpcInterface {
         role.consumeStock(i, playerName, 1);
 
         ItemStack soldItem = item.copy();
-        givePlayer(soldItem, entityplayer);
-        role.addPurchase(i, entityplayer.getDisplayName());
 
         // Always sync the purchasing player's data (balance + stock) after trade.
         // For shared stocks, consumeStock() syncs stock to other viewers,
