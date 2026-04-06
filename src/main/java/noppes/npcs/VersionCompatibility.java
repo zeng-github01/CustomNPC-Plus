@@ -181,6 +181,10 @@ public class VersionCompatibility {
             if (compound.hasKey("SpawnerDoesntDie") && !compound.hasKey("DespawnOnTargetLost") && !compound.getBoolean("DespawnOnSummmoner")) {
                 compound.setBoolean("DespawnOnTargetLost", true);
             }
+
+            double maxHealth = compound.getDouble("MaxHealth");
+            double regen = maxHealth * 0.05;
+            compound.setFloat("F", (float) regen);
         }
         if (npc.npcVersion == 13) {
             boolean bo = compound.getBoolean("HealthRegen");
