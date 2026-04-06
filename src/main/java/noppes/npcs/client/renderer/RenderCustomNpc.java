@@ -2,7 +2,6 @@ package noppes.npcs.client.renderer;
 
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.entity.NPCRendererHelper;
-import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RendererLivingEntity;
 import net.minecraft.entity.EntityList;
@@ -36,14 +35,8 @@ public class RenderCustomNpc extends RenderNPCHumanMale {
         ModelBase model = null;
         renderEntity = null;
         if (entity != null) {
-            Render render = RenderManager.instance.getEntityRenderObject(entity);
-            if (render instanceof RendererLivingEntity) {
-                renderEntity = (RendererLivingEntity) render;
-                model = NPCRendererHelper.getMainModel(renderEntity);
-            } else {
-                renderEntity = null;
-                model = null;
-            }
+            renderEntity = (RendererLivingEntity) RenderManager.instance.getEntityRenderObject(entity);
+            model = NPCRendererHelper.getMainModel(renderEntity);
             if (PixelmonHelper.isPixelmon(entity)) {
                 try {
                     Class c = Class.forName("com.pixelmonmod.pixelmon.entities.pixelmon.Entity2HasModel");
