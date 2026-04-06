@@ -11,6 +11,7 @@ import noppes.npcs.entity.data.ModelRotate;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public class VersionCompatibility {
     public static int ModRev = 23;
@@ -184,7 +185,15 @@ public class VersionCompatibility {
 
             double maxHealth = compound.getDouble("MaxHealth");
             double regen = maxHealth * 0.05;
-            compound.setFloat("F", (float) regen);
+            compound.setFloat("HealthRegen", (float) regen);
+
+            if (Objects.equals(compound.getString("NpcHurtSound"), "damage.hit")) {
+                compound.setString("NpcHurtSound", "minecraft:game.player.hurt");
+            }
+
+            if (Objects.equals(compound.getString("NpcDeathSound"), "damage.hit")) {
+                compound.setString("NpcDeathSound", "minecraft:game.player.hurt");
+            }
         }
         if (npc.npcVersion == 13) {
             boolean bo = compound.getBoolean("HealthRegen");
