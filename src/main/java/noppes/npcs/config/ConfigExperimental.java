@@ -18,8 +18,8 @@ public class ConfigExperimental {
     public static boolean useLegacyExplosion = false;
     public static Property LegacyDropProperty;
     public static boolean LegacyDrop = false;
-    public static Property useLegacyRenderProperty;
-    public static boolean useLegacyRender = false;
+    public static Property useLegacyKnockbackProperty;
+    public static boolean useLegacyKnockback = false;
 
 
     public static void init(File configFile) {
@@ -34,8 +34,8 @@ public class ConfigExperimental {
             useLegacyExplosion = useLegacyExplosionProperty.getBoolean(false);
             LegacyDropProperty = config.get(SERVER, "Use Legacy DropItem for npc", false, "Use Legacy Drop Item for NPCs for compatibility");
             LegacyDrop = LegacyDropProperty.getBoolean(false);
-            useLegacyRenderProperty = config.get(CLIENT, "Use legacy render", false, "Use legacy render for compatibility ");
-            useLegacyRender = useLegacyRenderProperty.getBoolean(false);
+            useLegacyKnockbackProperty = config.get(SERVER, "Use legacy knockback", false, "Use legacy knockback for compatibility ");
+            useLegacyKnockback = useLegacyKnockbackProperty.getBoolean(false);
         } catch (Exception e) {
             FMLLog.log(Level.ERROR, e, "CNPC+ has had a problem loading its experimental configuration");
         } finally {

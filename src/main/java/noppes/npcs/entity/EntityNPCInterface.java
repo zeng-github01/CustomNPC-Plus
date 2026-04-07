@@ -1752,7 +1752,7 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
 
     @Override
     public void knockBack(Entity par1Entity, float par2, double par3, double par5) {
-        if (stats.resistances.knockback >= 2)
+        if (!ConfigExperimental.useLegacyKnockback && stats.resistances.knockback >= 2)
             return;
         this.isAirBorne = true;
         float f1 = MathHelper.sqrt_double(par3 * par3 + par5 * par5);

@@ -183,9 +183,14 @@ public class VersionCompatibility {
                 compound.setBoolean("DespawnOnTargetLost", true);
             }
 
-            double maxHealth = compound.getDouble("MaxHealth");
-            double regen = maxHealth * 0.05;
-            compound.setFloat("HealthRegen", (float) regen);
+            if (compound.getBoolean("HealthRegen")) {
+                double maxHealth = compound.getDouble("MaxHealth");
+                double regen = maxHealth * 0.05;
+                compound.setFloat("HealthRegen", (float) regen);
+            }
+            else {
+                compound.setFloat("HealthRegen", 0);
+            }
 
             if (Objects.equals(compound.getString("NpcHurtSound"), "damage.hit")) {
                 compound.setString("NpcHurtSound", "minecraft:game.player.hurt");
