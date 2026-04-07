@@ -574,12 +574,19 @@ public class EntityProjectile extends EntityThrowable {
         if (explosive) {
             if (this.explosiveRadius != 0 || this.effect == EnumPotionType.None) {
                 boolean terraindamage = this.worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing") && explosiveDamage && destroyTerrain;
-                Explosion explosion = new Explosion(worldObj, this, posX, posY, posZ, explosiveRadius);
+                Explosion explosion = new Explosion(
+                    worldObj,
+                    this,
+                    posX, posY, posZ,
+                    explosiveRadius
+                );
                 explosion.isFlaming = this.effect == EnumPotionType.Fire;
                 explosion.isSmoking = terraindamage;
-                if (terraindamage)
-                    explosion.doExplosionA();
-                explosion.doExplosionB(worldObj.isRemote);
+                explosion.doExplosionA();
+                if (!terraindamage) {
+                    explosion.affectedBlockPositions.clear();
+                }
+                explosion.doExplosionB(true);
                 if (!worldObj.isRemote) {
                     Iterator iterator = worldObj.playerEntities.iterator();
 
