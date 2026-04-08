@@ -26,6 +26,7 @@ import noppes.npcs.api.ISkinOverlay;
 import noppes.npcs.client.ClientCacheHandler;
 import noppes.npcs.client.ImageDownloadAlt;
 import noppes.npcs.client.model.ModelMPM;
+import noppes.npcs.config.ConfigExperimental;
 import noppes.npcs.constants.EnumAnimation;
 import noppes.npcs.constants.EnumStandingType;
 import noppes.npcs.controllers.data.SkinOverlay;
@@ -200,6 +201,22 @@ public class RenderNPCInterface extends RenderLiving {
     @Override
     protected void preRenderCallback(EntityLivingBase entityliving, float f) {
         renderPlayerScale((EntityNPCInterface) entityliving, f);
+        if (ConfigExperimental.useLegacyRender) {
+            EntityNPCInterface npc = (EntityNPCInterface) entityliving;
+            TintData tintData = npc.display.tintData;
+            if (tintData.isTintEnabled() && tintData.isGeneralTintEnabled()) {
+                int color = tintData.getGeneralTint();
+                float r = (float) (color >> 16 & 255) / 255.0F;
+                float g = (float) (color >> 8 & 255) / 255.0F;
+                float b = (float) (color & 255) / 255.0F;
+
+                // 取得透明度 (0.0 - 1.0)
+                float a = (float) tintData.getGeneralAlpha() / 100.0F;
+
+                // 设置 GL 颜色，这会直接与随后的贴图进行 Multiply 混合
+                GL11.glColor4f(r, g, b, a);
+            }
+        }
     }
 
     @Override
@@ -417,6 +434,11 @@ public class RenderNPCInterface extends RenderLiving {
         GL11.glEnable(GL11.GL_TEXTURE_2D);
         OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
         GL11.glEnable(GL11.GL_CULL_FACE);
+
+        if (ConfigExperimental.useLegacyRender) {
+            GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        }
+
         GL11.glPopMatrix();
         this.passSpecialRender(p_76986_1_, p_76986_2_, p_76986_4_, p_76986_6_);
         MinecraftForge.EVENT_BUS.post(new RenderLivingEvent.Post(p_76986_1_, this, p_76986_2_, p_76986_4_, p_76986_6_));
@@ -438,6 +460,9 @@ public class RenderNPCInterface extends RenderLiving {
     }
 
     protected int getColorMultiplier(EntityLivingBase p_77030_1_, float p_77030_2_, float p_77030_3_) {
+        if (ConfigExperimental.useLegacyRender) {
+            return 0;
+        }
         EntityNPCInterface npc = (EntityNPCInterface) p_77030_1_;
         TintData tintData = npc.display.tintData;
         int alpha = (int) (0xff * ((double) tintData.getGeneralAlpha() / 100d)) << 24;
@@ -545,18 +570,18 @@ public class RenderNPCInterface extends RenderLiving {
     @Override
     public ResourceLocation getEntityTexture(Entity entity) {
         EntityNPCInterface npc = (EntityNPCInterface) entity;
-    
+
         // Early exit if texture already resolved
         if (npc.textureLocation != null) {
             return npc.textureLocation;
         }
-    
+
         // SkinType 0: custom texture or default
         if (npc.display.skinType == 0) {
             if (npc.display.texture.isEmpty()) {
                 return npc.textureLocation = fallBackSkin(npc);
             }
-    
+
             try {
                 if (npc instanceof EntityCustomNpc && ((EntityCustomNpc) npc).modelData.entityClass == null) {
                     npc.textureLocation = adjustLocalTexture(npc, new ResourceLocation(npc.display.texture));
@@ -569,7 +594,7 @@ public class RenderNPCInterface extends RenderLiving {
                 return fallBackSkin(npc);
             }
         }
-    
+
         // SkinType 1: player profile skin
         else if (npc.display.skinType == 1 && npc.display.playerProfile != null) {
             final Minecraft minecraft = Minecraft.getMinecraft();
@@ -580,15 +605,15 @@ public class RenderNPCInterface extends RenderLiving {
             }
             LastTextureTick = 0;
         }
-    
+
         // SkinType 2 / 3: load from URL
         else if (npc.display.skinType == 2 || npc.display.skinType == 3) {
             if (npc.display.url.isEmpty()) { // If URL is empty → fallback
                 return fallBackSkin(npc);
             }
-    
+
             ResourceLocation location = new ResourceLocation("skins/" + (npc.display.skinType + npc.display.url).hashCode());
-    
+
             try {
                 if (ClientCacheHandler.isCachedNPC(location)) { // If URL is cached
                     ResourceLocation loc = ClientCacheHandler
@@ -610,12 +635,12 @@ public class RenderNPCInterface extends RenderLiving {
                 return fallBackSkin(npc);
             }
         }
-    
+
         // Fallback: if no valid skin type matched
         else {
             return fallBackSkin(npc);
         }
-    
+
         // Final safety net
         return npc.textureLocation == null ? fallBackSkin(npc) : npc.textureLocation;
     }

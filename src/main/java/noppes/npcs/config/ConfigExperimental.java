@@ -20,6 +20,8 @@ public class ConfigExperimental {
     public static boolean LegacyDrop = false;
     public static Property useLegacyKnockbackProperty;
     public static boolean useLegacyKnockback = false;
+    public static Property useLegacyRenderProperty;
+    public static boolean useLegacyRender = false;
 
 
     public static void init(File configFile) {
@@ -36,6 +38,8 @@ public class ConfigExperimental {
             LegacyDrop = LegacyDropProperty.getBoolean(false);
             useLegacyKnockbackProperty = config.get(SERVER, "Use legacy knockback", false, "Use legacy knockback for compatibility ");
             useLegacyKnockback = useLegacyKnockbackProperty.getBoolean(false);
+            useLegacyRenderProperty = config.get(CLIENT,"Legacy Render",false, "Use legacy Render for compatibility");
+            useLegacyRender = useLegacyRenderProperty.getBoolean(false);
         } catch (Exception e) {
             FMLLog.log(Level.ERROR, e, "CNPC+ has had a problem loading its experimental configuration");
         } finally {
