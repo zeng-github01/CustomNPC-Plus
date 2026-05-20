@@ -5,6 +5,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import noppes.npcs.NoppesUtilPlayer;
+import noppes.npcs.config.ConfigExperimental;
 import noppes.npcs.controllers.data.PlayerData;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.roles.RoleTrader;
@@ -81,6 +82,14 @@ public class ContainerNPCTrader extends ContainerNpcInterface {
             return super.slotClick(i, j, par3, entityplayer);
         if (j == 1)
             return null;
+
+        if (ConfigExperimental.useLegacyTrader) {
+            ItemStack c1 = role.inventoryCurrency.getStackInSlot(i);
+            ItemStack c2 = role.inventoryCurrency.getStackInSlot(i + 18);
+            if (c1 == null && c2 == null) {
+                return null;
+            }
+        }
 
         Slot slot = (Slot) inventorySlots.get(i);
         if (slot == null || slot.getStack() == null)
@@ -174,6 +183,9 @@ public class ContainerNPCTrader extends ContainerNpcInterface {
     public boolean canBuy(int slot, EntityPlayer player) {
         ItemStack currency = role.inventoryCurrency.getStackInSlot(slot);
         ItemStack currency2 = role.inventoryCurrency.getStackInSlot(slot + 18);
+        if (ConfigExperimental.useLegacyTrader && currency == null && currency2 == null) {
+            return false;
+        }
         if (currency == null && currency2 == null)
             return true;
         if (currency == null) {

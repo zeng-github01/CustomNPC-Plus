@@ -22,6 +22,8 @@ public class ConfigExperimental {
     public static boolean useLegacyKnockback = false;
     public static Property useLegacyRenderProperty;
     public static boolean useLegacyRender = false;
+    public static Property LegacyTraderProperty;
+    public static boolean useLegacyTrader = false;
 
 
     public static void init(File configFile) {
@@ -40,6 +42,8 @@ public class ConfigExperimental {
             useLegacyKnockback = useLegacyKnockbackProperty.getBoolean(false);
             useLegacyRenderProperty = config.get(CLIENT,"Legacy Render",false, "Use legacy Render for compatibility");
             useLegacyRender = useLegacyRenderProperty.getBoolean(false);
+            LegacyTraderProperty = config.get(SERVER,"Use Legacy Trader Logical",false, "Use Legacy Trader Logical");
+            useLegacyTrader = LegacyTraderProperty.getBoolean(false);
         } catch (Exception e) {
             FMLLog.log(Level.ERROR, e, "CNPC+ has had a problem loading its experimental configuration");
         } finally {
