@@ -83,14 +83,6 @@ public class ContainerNPCTrader extends ContainerNpcInterface {
         if (j == 1)
             return null;
 
-        if (ConfigExperimental.useLegacyTrader) {
-            ItemStack c1 = role.inventoryCurrency.getStackInSlot(i);
-            ItemStack c2 = role.inventoryCurrency.getStackInSlot(i + 18);
-            if (c1 == null && c2 == null) {
-                return null;
-            }
-        }
-
         Slot slot = (Slot) inventorySlots.get(i);
         if (slot == null || slot.getStack() == null)
             return null;
