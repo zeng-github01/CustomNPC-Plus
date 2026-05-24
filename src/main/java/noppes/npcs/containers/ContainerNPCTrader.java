@@ -77,95 +77,65 @@ public class ContainerNPCTrader extends ContainerNpcInterface {
 
     @Override
     public ItemStack slotClick(int i, int j, int par3, EntityPlayer entityplayer) {
-        if (par3 == 6) par3 = 0;
+        if (par3 == 6)
+            par3 = 0;
         if (i < 0 || i >= 18)
             return super.slotClick(i, j, par3, entityplayer);
         if (j == 1)
             return null;
-
         Slot slot = (Slot) inventorySlots.get(i);
         if (slot == null || slot.getStack() == null)
             return null;
-
         ItemStack item = slot.getStack();
-        if (!canGivePlayer(item, entityplayer) || !isSlotEnabled(i, entityplayer))
+        if (!canGivePlayer(item, entityplayer))
+            return null;
+        if (!isSlotEnabled(i, entityplayer))
             return null;
 
+        // Check stock availability
         String playerName = entityplayer.getCommandSenderName();
+        if (!role.hasStock(i, playerName, 1)) {
+            return null;  // Out of stock
+        }
+
+        // Item-based currency
+        if (!canBuy(i, entityplayer))
+            return null;
+
+        // Currency cost check (additive to item costs)
         long currencyCost = role.getCurrencyCost(i);
-
-        // --- 逻辑分歧点 ---
-
-        if (par3 == 1) {
-            // 【情况 A: Shift 点击】 -> 批量购买并放入背包
-            int boughtCount = 0;
-            // 循环条件：有库存 && 够钱买物品 && 够钱买金币 && 背包有空位
-            while (role.hasStock(i, playerName, 1) && canBuy(i, entityplayer) &&
-                (currencyCost <= 0 || PlayerData.get(entityplayer).tradeData.getBalance() >= currencyCost) &&
-                entityplayer.inventory.getFirstEmptyStack() != -1) {
-
-                // 1. 消耗物品货币
-                NoppesUtilPlayer.consumeItem(entityplayer, role.inventoryCurrency.getStackInSlot(i), role.ignoreDamage, role.ignoreNBT);
-                NoppesUtilPlayer.consumeItem(entityplayer, role.inventoryCurrency.getStackInSlot(i + 18), role.ignoreDamage, role.ignoreNBT);
-
-                // 2. 扣除金币货币 (必须在循环内，否则会刷钱)
-                if (currencyCost > 0) {
-                    PlayerData.get(entityplayer).tradeData.withdraw(currencyCost);
-                }
-
-                // 3. 消耗库存
-                role.consumeStock(i, playerName, 1);
-
-                // 4. 给予物品到背包
-                ItemStack soldItem = item.copy();
-                entityplayer.inventory.addItemStackToInventory(soldItem);
-                role.addPurchase(i, entityplayer.getDisplayName());
-                boughtCount++;
-            }
-
-            if (boughtCount > 0 && entityplayer instanceof EntityPlayerMP) {
-                role.syncToPlayer((EntityPlayerMP) entityplayer);
-            }
-            return null; // Shift点击通常返回null或空
-
-        } else {
-            // 【情况 B: 普通点击】 -> 购买一个并放在鼠标光标上
-
-            // 检查：有库存 && 够钱买物品 && 够钱买金币
-            if (role.hasStock(i, playerName, 1) && canBuy(i, entityplayer) &&
-                (currencyCost <= 0 || PlayerData.get(entityplayer).tradeData.getBalance() >= currencyCost)) {
-
-                // 只有当玩家手上没拿着东西时，才允许购买到手上（防止覆盖手上的东西）
-                if (entityplayer.inventory.getItemStack() == null) {
-
-                    // 1. 消耗物品货币
-                    NoppesUtilPlayer.consumeItem(entityplayer, role.inventoryCurrency.getStackInSlot(i), role.ignoreDamage, role.ignoreNBT);
-                    NoppesUtilPlayer.consumeItem(entityplayer, role.inventoryCurrency.getStackInSlot(i + 18), role.ignoreDamage, role.ignoreNBT);
-
-                    // 2. 扣除金币货币
-                    if (currencyCost > 0) {
-                        PlayerData.get(entityplayer).tradeData.withdraw(currencyCost);
-                    }
-
-                    // 3. 消耗库存
-                    role.consumeStock(i, playerName, 1);
-
-                    // 4. 关键点：将物品放在鼠标指针上，而不是直接进背包
-                    ItemStack soldItem = item.copy();
-                    entityplayer.inventory.setItemStack(soldItem); // <--- 修复BUG的核心
-
-                    role.addPurchase(i, entityplayer.getDisplayName());
-
-                    if (entityplayer instanceof EntityPlayerMP) {
-                        role.syncToPlayer((EntityPlayerMP) entityplayer);
-                    }
-
-                    return soldItem;
-                }
+        if (currencyCost > 0) {
+            PlayerData data = PlayerData.get(entityplayer);
+            if (data.tradeData.getBalance() < currencyCost) {
+                return null;  // Can't afford currency cost
             }
         }
 
-        return null;
+        // Consume item currency
+        NoppesUtilPlayer.consumeItem(entityplayer, role.inventoryCurrency.getStackInSlot(i), role.ignoreDamage, role.ignoreNBT);
+        NoppesUtilPlayer.consumeItem(entityplayer, role.inventoryCurrency.getStackInSlot(i + 18), role.ignoreDamage, role.ignoreNBT);
+
+        // Withdraw currency cost (after item consumption to maintain order)
+        if (currencyCost > 0) {
+            PlayerData data = PlayerData.get(entityplayer);
+            data.tradeData.withdraw(currencyCost);
+        }
+
+        // Consume stock
+        role.consumeStock(i, playerName, 1);
+
+        ItemStack soldItem = item.copy();
+        givePlayer(soldItem, entityplayer);
+        role.addPurchase(i, entityplayer.getDisplayName());
+
+        // Always sync the purchasing player's data (balance + stock) after trade.
+        // For shared stocks, consumeStock() syncs stock to other viewers,
+        // but the purchasing player's balance still needs an explicit sync.
+        if (entityplayer instanceof EntityPlayerMP) {
+            role.syncToPlayer((EntityPlayerMP) entityplayer);
+        }
+
+        return soldItem;
     }
 
     public boolean isSlotEnabled(int slot, EntityPlayer player) {
