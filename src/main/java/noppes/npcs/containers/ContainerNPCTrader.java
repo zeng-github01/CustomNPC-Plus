@@ -71,7 +71,67 @@ public class ContainerNPCTrader extends ContainerNpcInterface {
     }
 
     @Override
-    public ItemStack transferStackInSlot(EntityPlayer par1EntityPlayer, int i) {
+    public ItemStack transferStackInSlot(EntityPlayer player, int i) {
+        if (i < 0 || i >= 18) {
+            return null;
+        }
+
+        Slot slot = (Slot) this.inventorySlots.get(i);
+        if (slot == null || !slot.getHasStack()) {
+            return null;
+        }
+
+        if (!isSlotEnabled(i, player)) {
+            return null;
+        }
+
+        // Check stock availability
+        String playerName = player.getCommandSenderName();
+        if (!role.hasStock(i, playerName, 1)) {
+            return null;
+        }
+
+        // Item-based currency
+        if (!canBuy(i, player)) {
+            return null;
+        }
+
+        // Currency cost check (additive to item costs)
+        long currencyCost = role.getCurrencyCost(i);
+        PlayerData data = PlayerData.get(player);
+        if (currencyCost > 0) {
+            if (data == null || data.tradeData.getBalance() < currencyCost) {
+                return null;
+            }
+        }
+
+        // Try to store in player inventory
+        ItemStack item = slot.getStack();
+        ItemStack soldItem = item.copy();
+        if (!this.mergeItemStack(soldItem, 18, 54, false)) {
+            return null;
+        }
+
+        // Consume item currency
+        NoppesUtilPlayer.consumeItem(player, role.inventoryCurrency.getStackInSlot(i), role.ignoreDamage, role.ignoreNBT);
+        NoppesUtilPlayer.consumeItem(player, role.inventoryCurrency.getStackInSlot(i + 18), role.ignoreDamage, role.ignoreNBT);
+
+        // Withdraw currency cost (after item consumption to maintain order)
+        if (currencyCost > 0) {
+            data.tradeData.withdraw(currencyCost);
+        }
+
+        // Consume stock
+        role.consumeStock(i, playerName, 1);
+        role.addPurchase(i, player.getDisplayName());
+
+        // Always sync the purchasing player's data (balance + stock) after trade.
+        // For shared stocks, consumeStock() syncs stock to other viewers,
+        // but the purchasing player's balance still needs an explicit sync.
+        if (player instanceof EntityPlayerMP) {
+            role.syncToPlayer((EntityPlayerMP) player);
+        }
+
         return null;
     }
 
@@ -83,6 +143,10 @@ public class ContainerNPCTrader extends ContainerNpcInterface {
             return super.slotClick(i, j, par3, entityplayer);
         if (j == 1)
             return null;
+        if (par3 == 1) {
+            return transferStackInSlot(entityplayer, i);
+        }
+
         Slot slot = (Slot) inventorySlots.get(i);
         if (slot == null || slot.getStack() == null)
             return null;
