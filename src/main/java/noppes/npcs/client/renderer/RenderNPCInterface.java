@@ -202,21 +202,27 @@ public class RenderNPCInterface extends RenderLiving {
     protected void preRenderCallback(EntityLivingBase entityliving, float f) {
         renderPlayerScale((EntityNPCInterface) entityliving, f);
         if (ConfigExperimental.useLegacyRender) {
-            EntityNPCInterface npc = (EntityNPCInterface) entityliving;
-            TintData tintData = npc.display.tintData;
-            if (tintData.isTintEnabled() && tintData.isGeneralTintEnabled()) {
-                int color = tintData.getGeneralTint();
-                float r = (float) (color >> 16 & 255) / 255.0F;
-                float g = (float) (color >> 8 & 255) / 255.0F;
-                float b = (float) (color & 255) / 255.0F;
-
-                // 取得透明度 (0.0 - 1.0)
-                float a = (float) tintData.getGeneralAlpha() / 100.0F;
-
-                // 设置 GL 颜色，这会直接与随后的贴图进行 Multiply 混合
-                GL11.glColor4f(r, g, b, a);
-            }
+            applyLegacyGeneralTint((EntityNPCInterface) entityliving);
         }
+    }
+
+    private void applyLegacyGeneralTint(EntityNPCInterface npc) {
+        TintData tintData = npc.display.tintData;
+        if (!tintData.isTintEnabled() || !tintData.isGeneralTintEnabled()) {
+            return;
+        }
+
+        int color = tintData.getGeneralTint();
+        float r = ((color >> 16) & 0xFF) / 255.0F;
+        float g = ((color >> 8) & 0xFF) / 255.0F;
+        float b = (color & 0xFF) / 255.0F;
+        float a = Math.max(0.0F, Math.min(1.0F, tintData.getGeneralAlpha() / 100.0F));
+
+        GL11.glColor4f(r, g, b, a);
+    }
+
+    private void resetLegacyRenderColor() {
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     @Override
@@ -308,7 +314,13 @@ public class RenderNPCInterface extends RenderLiving {
 
             GL11.glEnable(GL11.GL_ALPHA_TEST);
             this.mainModel.setLivingAnimations(p_76986_1_, f7, f6, p_76986_9_);
+            if (ConfigExperimental.useLegacyRender) {
+                applyLegacyGeneralTint(p_76986_1_);
+            }
             this.renderModel(p_76986_1_, f7, f6, f4, f3 - f2, f13, f5);
+            if (ConfigExperimental.useLegacyRender) {
+                resetLegacyRenderColor();
+            }
             int j;
             float f8;
             float f9;
@@ -318,12 +330,24 @@ public class RenderNPCInterface extends RenderLiving {
                 j = this.shouldRenderPass(p_76986_1_, i, p_76986_9_);
 
                 if (j > 0) {
+                    if (ConfigExperimental.useLegacyRender) {
+                        applyLegacyGeneralTint(p_76986_1_);
+                    }
                     this.renderPassModel.setLivingAnimations(p_76986_1_, f7, f6, p_76986_9_);
                     this.renderPassModel.render(p_76986_1_, f7, f6, f4, f3 - f2, f13, f5);
+                    if (ConfigExperimental.useLegacyRender) {
+                        resetLegacyRenderColor();
+                    }
 
                     if ((j & 240) == 16) {
                         this.func_82408_c(p_76986_1_, i, p_76986_9_);
+                        if (ConfigExperimental.useLegacyRender) {
+                            applyLegacyGeneralTint(p_76986_1_);
+                        }
                         this.renderPassModel.render(p_76986_1_, f7, f6, f4, f3 - f2, f13, f5);
+                        if (ConfigExperimental.useLegacyRender) {
+                            resetLegacyRenderColor();
+                        }
                     }
 
                     if ((j & 15) == 15) {
@@ -436,7 +460,7 @@ public class RenderNPCInterface extends RenderLiving {
         GL11.glEnable(GL11.GL_CULL_FACE);
 
         if (ConfigExperimental.useLegacyRender) {
-            GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+            resetLegacyRenderColor();
         }
 
         GL11.glPopMatrix();
