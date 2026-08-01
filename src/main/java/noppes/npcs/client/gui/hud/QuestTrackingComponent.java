@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import noppes.npcs.config.ConfigClient;
@@ -86,11 +87,11 @@ public class QuestTrackingComponent extends HudComponent {
         String turnIn = "";
         boolean instantComplete = compound.getBoolean("Instant");
         if (instantComplete) {
-            turnIn = "Completed automatically";
+            turnIn = I18n.format("quest.autocompleted");
         } else {
             String npcName = compound.getString("TurnInNPC");
             if (!npcName.isEmpty()) {
-                turnIn = "Complete with " + npcName;
+                turnIn = I18n.format("quest.completewith", npcName);
             }
         }
         setQuestData(quest, category, objectives, turnIn);
