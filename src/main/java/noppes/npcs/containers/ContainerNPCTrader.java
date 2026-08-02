@@ -85,50 +85,57 @@ public class ContainerNPCTrader extends ContainerNpcInterface {
             return null;
         }
 
-        // Check stock availability
         String playerName = player.getCommandSenderName();
-        if (!role.hasStock(i, playerName, 1)) {
-            return null;
-        }
-
-        // Item-based currency
-        if (!canBuy(i, player)) {
-            return null;
-        }
-
-        // Currency cost check (additive to item costs)
         long currencyCost = role.getCurrencyCost(i);
         PlayerData data = PlayerData.get(player);
-        if (currencyCost > 0) {
-            if (data == null || data.tradeData.getBalance() < currencyCost) {
-                return null;
-            }
-        }
-
-        // Try to store in player inventory
         ItemStack item = slot.getStack();
-        ItemStack soldItem = item.copy();
-        if (!this.mergeItemStack(soldItem, 18, 54, false)) {
-            return null;
+
+        boolean boughtAny = false;
+
+        // Loop until out of stock, insufficient currency, or inventory full
+        while (true) {
+            // 1. Check stock availability
+            if (!role.hasStock(i, playerName, 1)) {
+                break;
+            }
+
+            // 2. Item-based currency check
+            if (!canBuy(i, player)) {
+                break;
+            }
+
+            // 3. Currency cost check (additive to item costs)
+            if (currencyCost > 0) {
+                if (data == null || data.tradeData.getBalance() < currencyCost) {
+                    break;
+                }
+            }
+
+            // 4. Try to store in player inventory (slots 18 to 53)
+            // If inventory is full, mergeItemStack returns false and cancels the transaction
+            ItemStack soldItem = item.copy();
+            if (!this.mergeItemStack(soldItem, 18, 54, false)) {
+                break;
+            }
+
+            // 5. Consume item currency
+            NoppesUtilPlayer.consumeItem(player, role.inventoryCurrency.getStackInSlot(i), role.ignoreDamage, role.ignoreNBT);
+            NoppesUtilPlayer.consumeItem(player, role.inventoryCurrency.getStackInSlot(i + 18), role.ignoreDamage, role.ignoreNBT);
+
+            // 6. Withdraw currency cost (after item consumption to maintain order)
+            if (currencyCost > 0) {
+                data.tradeData.withdraw(currencyCost);
+            }
+
+            // 7. Consume stock and log purchase
+            role.consumeStock(i, playerName, 1);
+            role.addPurchase(i, player.getDisplayName());
+
+            boughtAny = true;
         }
 
-        // Consume item currency
-        NoppesUtilPlayer.consumeItem(player, role.inventoryCurrency.getStackInSlot(i), role.ignoreDamage, role.ignoreNBT);
-        NoppesUtilPlayer.consumeItem(player, role.inventoryCurrency.getStackInSlot(i + 18), role.ignoreDamage, role.ignoreNBT);
-
-        // Withdraw currency cost (after item consumption to maintain order)
-        if (currencyCost > 0) {
-            data.tradeData.withdraw(currencyCost);
-        }
-
-        // Consume stock
-        role.consumeStock(i, playerName, 1);
-        role.addPurchase(i, player.getDisplayName());
-
-        // Always sync the purchasing player's data (balance + stock) after trade.
-        // For shared stocks, consumeStock() syncs stock to other viewers,
-        // but the purchasing player's balance still needs an explicit sync.
-        if (player instanceof EntityPlayerMP) {
+        // Sync player data (balance + stock) once after all purchases finish
+        if (boughtAny && player instanceof EntityPlayerMP) {
             role.syncToPlayer((EntityPlayerMP) player);
         }
 
