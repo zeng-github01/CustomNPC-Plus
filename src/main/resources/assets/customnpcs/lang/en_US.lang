@@ -281,6 +281,7 @@ remote.reset=Reset
 remote.tp=Tp to
 remote.resetall=Reset All
 remote.freeze=Freeze NPCs
+remote.unfreeze=Unfreeze NPCs
 
 spawner.entities=Entities
 spawner.clones=Clones

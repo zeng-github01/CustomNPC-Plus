@@ -212,6 +212,7 @@ remote.reset=重置
 remote.tp=传送至
 remote.resetall=重置所有
 remote.freeze=冻结NPC
+remote.unfreeze=解冻NPC
 
 spawner.entities=实体
 spawner.clones=克隆NPC

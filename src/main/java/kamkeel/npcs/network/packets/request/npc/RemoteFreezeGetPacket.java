@@ -43,6 +43,6 @@ public final class RemoteFreezeGetPacket extends AbstractPacket {
             return;
         if (!PacketUtil.verifyItemPacket(packetName, EnumItemPacketType.WAND, player))
             return;
-        ScrollSelectedPacket.setSelectedList((EntityPlayerMP) player, CustomNpcs.FreezeNPCs ? "Unfreeze NPCs" : "Freeze NPCs");
+        ScrollSelectedPacket.setSelectedList((EntityPlayerMP) player, CustomNpcs.FreezeNPCs ? "remote.unfreeze" : "remote.freeze");
     }
 }

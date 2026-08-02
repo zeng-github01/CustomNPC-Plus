@@ -12,6 +12,7 @@ import kamkeel.npcs.network.packets.request.npc.RemoteTpToNpcPacket;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.gui.GuiYesNoCallback;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.StatCollector;
 import noppes.npcs.client.NoppesUtil;
@@ -170,7 +171,7 @@ public class GuiNpcRemoteEditor extends GuiNPCInterface implements IScrollData, 
 
     @Override
     public void setSelected(String selected) {
-        getButton(3).setDisplayText(selected);
+        getButton(3).setDisplayText(I18n.format(selected));
     }
 
 }
