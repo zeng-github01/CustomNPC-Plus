@@ -330,24 +330,12 @@ public class RenderNPCInterface extends RenderLiving {
                 j = this.shouldRenderPass(p_76986_1_, i, p_76986_9_);
 
                 if (j > 0) {
-                    if (ConfigExperimental.useLegacyRender) {
-                        applyLegacyGeneralTint(p_76986_1_);
-                    }
                     this.renderPassModel.setLivingAnimations(p_76986_1_, f7, f6, p_76986_9_);
                     this.renderPassModel.render(p_76986_1_, f7, f6, f4, f3 - f2, f13, f5);
-                    if (ConfigExperimental.useLegacyRender) {
-                        resetLegacyRenderColor();
-                    }
 
                     if ((j & 240) == 16) {
                         this.func_82408_c(p_76986_1_, i, p_76986_9_);
-                        if (ConfigExperimental.useLegacyRender) {
-                            applyLegacyGeneralTint(p_76986_1_);
-                        }
                         this.renderPassModel.render(p_76986_1_, f7, f6, f4, f3 - f2, f13, f5);
-                        if (ConfigExperimental.useLegacyRender) {
-                            resetLegacyRenderColor();
-                        }
                     }
 
                     if ((j & 15) == 15) {
