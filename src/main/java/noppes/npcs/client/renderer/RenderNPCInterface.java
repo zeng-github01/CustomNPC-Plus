@@ -216,7 +216,7 @@ public class RenderNPCInterface extends RenderLiving {
         float r = ((color >> 16) & 0xFF) / 255.0F;
         float g = ((color >> 8) & 0xFF) / 255.0F;
         float b = (color & 0xFF) / 255.0F;
-        float a = Math.max(0.0F, Math.min(1.0F, tintData.getGeneralAlpha() / 100.0F));
+        float a = 1.0F;
 
         GL11.glColor4f(r, g, b, a);
     }
@@ -398,7 +398,8 @@ public class RenderNPCInterface extends RenderLiving {
             GL11.glDisable(GL11.GL_TEXTURE_2D);
             OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
             TintData tintData = p_76986_1_.display.tintData;
-            if ((j >> 24 & 255) > 0 || p_76986_1_.hurtTime > 0 || p_76986_1_.deathTime > 0 || (tintData.isTintEnabled() && tintData.isGeneralTintEnabled())) {
+            boolean triggerGeneralTintOverlay = tintData.isTintEnabled() && tintData.isGeneralTintEnabled() && !ConfigExperimental.useLegacyRender;
+            if ((j >> 24 & 255) > 0 || p_76986_1_.hurtTime > 0 || p_76986_1_.deathTime > 0 || triggerGeneralTintOverlay) {
                 GL11.glDisable(GL11.GL_TEXTURE_2D);
                 GL11.glDisable(GL11.GL_ALPHA_TEST);
                 GL11.glEnable(GL11.GL_BLEND);
