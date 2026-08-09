@@ -201,28 +201,6 @@ public class RenderNPCInterface extends RenderLiving {
     @Override
     protected void preRenderCallback(EntityLivingBase entityliving, float f) {
         renderPlayerScale((EntityNPCInterface) entityliving, f);
-        if (ConfigExperimental.useLegacyRender) {
-            applyLegacyGeneralTint((EntityNPCInterface) entityliving);
-        }
-    }
-
-    private void applyLegacyGeneralTint(EntityNPCInterface npc) {
-        TintData tintData = npc.display.tintData;
-        if (!tintData.isTintEnabled() || !tintData.isGeneralTintEnabled()) {
-            return;
-        }
-
-        int color = tintData.getGeneralTint();
-        float r = ((color >> 16) & 0xFF) / 255.0F;
-        float g = ((color >> 8) & 0xFF) / 255.0F;
-        float b = (color & 0xFF) / 255.0F;
-        float a = 1.0F;
-
-        GL11.glColor4f(r, g, b, a);
-    }
-
-    private void resetLegacyRenderColor() {
-        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     @Override
@@ -314,13 +292,7 @@ public class RenderNPCInterface extends RenderLiving {
 
             GL11.glEnable(GL11.GL_ALPHA_TEST);
             this.mainModel.setLivingAnimations(p_76986_1_, f7, f6, p_76986_9_);
-            if (ConfigExperimental.useLegacyRender) {
-                applyLegacyGeneralTint(p_76986_1_);
-            }
             this.renderModel(p_76986_1_, f7, f6, f4, f3 - f2, f13, f5);
-            if (ConfigExperimental.useLegacyRender) {
-                resetLegacyRenderColor();
-            }
             int j;
             float f8;
             float f9;
@@ -330,24 +302,12 @@ public class RenderNPCInterface extends RenderLiving {
                 j = this.shouldRenderPass(p_76986_1_, i, p_76986_9_);
 
                 if (j > 0) {
-                    if (ConfigExperimental.useLegacyRender) {
-                        applyLegacyGeneralTint(p_76986_1_);
-                    }
                     this.renderPassModel.setLivingAnimations(p_76986_1_, f7, f6, p_76986_9_);
                     this.renderPassModel.render(p_76986_1_, f7, f6, f4, f3 - f2, f13, f5);
-                    if (ConfigExperimental.useLegacyRender) {
-                        resetLegacyRenderColor();
-                    }
 
                     if ((j & 240) == 16) {
                         this.func_82408_c(p_76986_1_, i, p_76986_9_);
-                        if (ConfigExperimental.useLegacyRender) {
-                            applyLegacyGeneralTint(p_76986_1_);
-                        }
                         this.renderPassModel.render(p_76986_1_, f7, f6, f4, f3 - f2, f13, f5);
-                        if (ConfigExperimental.useLegacyRender) {
-                            resetLegacyRenderColor();
-                        }
                     }
 
                     if ((j & 15) == 15) {
@@ -398,8 +358,7 @@ public class RenderNPCInterface extends RenderLiving {
             GL11.glDisable(GL11.GL_TEXTURE_2D);
             OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
             TintData tintData = p_76986_1_.display.tintData;
-            boolean triggerGeneralTintOverlay = tintData.isTintEnabled() && tintData.isGeneralTintEnabled() && !ConfigExperimental.useLegacyRender;
-            if ((j >> 24 & 255) > 0 || p_76986_1_.hurtTime > 0 || p_76986_1_.deathTime > 0 || triggerGeneralTintOverlay) {
+            if ((j >> 24 & 255) > 0 || p_76986_1_.hurtTime > 0 || p_76986_1_.deathTime > 0 || (tintData.isTintEnabled() && tintData.isGeneralTintEnabled())) {
                 GL11.glDisable(GL11.GL_TEXTURE_2D);
                 GL11.glDisable(GL11.GL_ALPHA_TEST);
                 GL11.glEnable(GL11.GL_BLEND);
@@ -459,11 +418,6 @@ public class RenderNPCInterface extends RenderLiving {
         GL11.glEnable(GL11.GL_TEXTURE_2D);
         OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
         GL11.glEnable(GL11.GL_CULL_FACE);
-
-        if (ConfigExperimental.useLegacyRender) {
-            resetLegacyRenderColor();
-        }
-
         GL11.glPopMatrix();
         this.passSpecialRender(p_76986_1_, p_76986_2_, p_76986_4_, p_76986_6_);
         MinecraftForge.EVENT_BUS.post(new RenderLivingEvent.Post(p_76986_1_, this, p_76986_2_, p_76986_4_, p_76986_6_));
@@ -485,9 +439,6 @@ public class RenderNPCInterface extends RenderLiving {
     }
 
     protected int getColorMultiplier(EntityLivingBase p_77030_1_, float p_77030_2_, float p_77030_3_) {
-        if (ConfigExperimental.useLegacyRender) {
-            return 0;
-        }
         EntityNPCInterface npc = (EntityNPCInterface) p_77030_1_;
         TintData tintData = npc.display.tintData;
         int alpha = (int) (0xff * ((double) tintData.getGeneralAlpha() / 100d)) << 24;
@@ -626,7 +577,7 @@ public class RenderNPCInterface extends RenderLiving {
             Map map = minecraft.func_152342_ad().func_152788_a(npc.display.playerProfile);
             if (map.containsKey(Type.SKIN)) {
                 npc.textureLocation = minecraft.func_152342_ad()
-                        .func_152792_a((MinecraftProfileTexture) map.get(Type.SKIN), Type.SKIN);
+                    .func_152792_a((MinecraftProfileTexture) map.get(Type.SKIN), Type.SKIN);
             }
             LastTextureTick = 0;
         }
@@ -642,14 +593,14 @@ public class RenderNPCInterface extends RenderLiving {
             try {
                 if (ClientCacheHandler.isCachedNPC(location)) { // If URL is cached
                     ResourceLocation loc = ClientCacheHandler
-                            .getNPCTexture(npc.display.url, npc.display.skinType == 3, location)
-                            .getLocation();
+                        .getNPCTexture(npc.display.url, npc.display.skinType == 3, location)
+                        .getLocation();
                     if (loc == null) return fallBackSkin(npc);
                     npc.textureLocation = loc;
                 } else if (LastTextureTick >= 5) { // Prevent request flooding
                     ResourceLocation loc = ClientCacheHandler
-                            .getNPCTexture(npc.display.url, npc.display.skinType == 3, location)
-                            .getLocation();
+                        .getNPCTexture(npc.display.url, npc.display.skinType == 3, location)
+                        .getLocation();
                     if (loc == null) return fallBackSkin(npc);
                     npc.textureLocation = loc;
                     LastTextureTick = 0;
