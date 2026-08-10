@@ -439,6 +439,8 @@ public class RenderNPCInterface extends RenderLiving {
     }
 
     protected int getColorMultiplier(EntityLivingBase p_77030_1_, float p_77030_2_, float p_77030_3_) {
+        if (ConfigExperimental.useLegacyRender) return 0;
+
         EntityNPCInterface npc = (EntityNPCInterface) p_77030_1_;
         TintData tintData = npc.display.tintData;
         int alpha = (int) (0xff * ((double) tintData.getGeneralAlpha() / 100d)) << 24;
@@ -450,6 +452,13 @@ public class RenderNPCInterface extends RenderLiving {
         if (GeckoAddonClient.Instance.isGeckoModel(mainModel)) {
             GeckoAddonClient.Instance.geckoRenderModel((ModelMPM) mainModel, npc, npc.rotationYaw, Minecraft.getMinecraft().timer.renderPartialTicks);
         } else if (this.getEntityTexture(entityliving) != null) {
+            if (ConfigExperimental.useLegacyRender && npc.display.tintData.isTintEnabled() && npc.display.tintData.isGeneralTintEnabled()) {
+                float red = (float)(npc.display.tintData.getGeneralTint() >> 16 & 255) / 255.0F;
+                float green = (float)(npc.display.tintData.getGeneralTint() >> 8 & 255) / 255.0F;
+                float blue = (float)(npc.display.tintData.getGeneralTint() & 255) / 255.0F;
+                
+                GL11.glColor3f(red, green, blue);
+            }
             super.renderModel(entityliving, par2, par3, par4, par5, par6, par7);
         }
 
