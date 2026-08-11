@@ -1403,6 +1403,17 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
             .append(" motionY=").append(fmt(motionY))
             .append(" fallDist=").append(fmt(fallDistance));
 
+        // Client only runs the interpolation branch while newPosRotationIncrements > 0; once it
+        // hits 0 it free-simulates gravity and collision until the next position packet.
+        if (worldObj != null && worldObj.isRemote) {
+            sb.append(" | incr=").append(newPosRotationIncrements)
+                .append(" target=[").append(fmt(newPosX)).append(",").append(fmt(newPosY)).append(",").append(fmt(newPosZ)).append("]")
+                .append(" dTarget=").append(fmt(Math.sqrt(
+                    (newPosX - posX) * (newPosX - posX)
+                        + (newPosY - posY) * (newPosY - posY)
+                        + (newPosZ - posZ) * (newPosZ - posZ))));
+        }
+
         int bx = MathHelper.floor_double(posX);
         int bz = MathHelper.floor_double(posZ);
         int by = MathHelper.floor_double(boundingBox.minY - 0.0625D);
