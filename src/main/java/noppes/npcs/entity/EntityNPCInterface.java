@@ -1351,8 +1351,9 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
         this.height = newHeight;
         this.setPosition(posX, posY, posZ);
 
-        if (newWidth > oldWidth && !this.firstUpdate && !this.worldObj.isRemote)
-            this.moveEntity(oldWidth - newWidth, 0.0D, oldWidth - newWidth);
+        // Disabled while testing whether the nudge has any bearing on the clipping reports.
+        // if (newWidth > oldWidth && !this.firstUpdate && !this.worldObj.isRemote)
+        //     this.moveEntity(oldWidth - newWidth, 0.0D, oldWidth - newWidth);
 
         logHitbox("applyHitbox:after");
     }
