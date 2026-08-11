@@ -341,6 +341,17 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
         }
     }
 
+    @Override
+    protected void updatePotionEffects() {
+        try {
+            super.updatePotionEffects();
+        } catch (ConcurrentModificationException ignored) {
+            // Vanilla potion-effect updates can mutate the active potion map while it is being iterated,
+            // which can crash the server from EntityLivingBase.updatePotionEffects().
+            // Skip this tick's super update and continue with the custom NPC logic.
+        }
+    }
+
     public void setWorld(World world) {
         super.setWorld(world);
         script.setWorld(world);
