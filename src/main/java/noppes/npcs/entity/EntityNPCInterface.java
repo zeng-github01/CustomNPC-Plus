@@ -86,6 +86,7 @@ import noppes.npcs.EventHooks;
 import noppes.npcs.IChatMessages;
 import noppes.npcs.NBTTags;
 import noppes.npcs.NoppesUtilPlayer;
+import noppes.npcs.LogWriter;
 import noppes.npcs.NoppesUtilServer;
 import noppes.npcs.NpcDamageSource;
 import noppes.npcs.VersionCompatibility;
@@ -500,6 +501,16 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
         }
 
         super.onLivingUpdate();
+
+        if (HITBOX_DEBUG) {
+            if (onGround != debugWasOnGround) {
+                logHitbox(onGround ? "landed" : "leftGround");
+                debugWasOnGround = onGround;
+            } else if (!onGround || Math.abs(ySize) > 1.0E-4D
+                || Math.abs(boundingBox.minY - (posY - yOffset + ySize)) > 1.0E-4D) {
+                logHitbox("tick");
+            }
+        }
 
         // Apply locks after super.onLivingUpdate() to override AI/physics changes
         abilities.applyRotationControl();
@@ -1333,12 +1344,76 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
      */
     protected void applyHitbox(float newWidth, float newHeight) {
         float oldWidth = this.width;
+        float oldHeight = this.height;
+        logHitbox("applyHitbox:before " + fmt(oldWidth) + "x" + fmt(oldHeight) + " -> " + fmt(newWidth) + "x" + fmt(newHeight));
+
         this.width = newWidth;
         this.height = newHeight;
         this.setPosition(posX, posY, posZ);
 
         if (newWidth > oldWidth && !this.firstUpdate && !this.worldObj.isRemote)
             this.moveEntity(oldWidth - newWidth, 0.0D, oldWidth - newWidth);
+
+        logHitbox("applyHitbox:after");
+    }
+
+    public static boolean HITBOX_DEBUG = true;
+    private boolean debugWasOnGround = false;
+
+    private static String fmt(double d) {
+        return String.format("%.4f", d);
+    }
+
+    /**
+     * Temporary instrumentation for the npc hitbox clipping investigation.
+     */
+    public void logHitbox(String stage) {
+        if (!HITBOX_DEBUG)
+            return;
+
+        String side = worldObj != null && worldObj.isRemote ? "CLIENT" : "SERVER";
+
+        // Vanilla keeps boundingBox.minY == posY - yOffset + ySize. Any drift here means the
+        // box and the reported position disagree.
+        double expectedMinY = posY - yOffset + ySize;
+        double drift = boundingBox.minY - expectedMinY;
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("[HITBOX][").append(side).append("][").append(ticksExisted).append("] ").append(stage)
+            .append(" | size=").append(display == null ? -1 : display.modelSize)
+            .append(" wh=").append(fmt(width)).append("x").append(fmt(height))
+            .append(" posY=").append(fmt(posY))
+            .append(" box=[").append(fmt(boundingBox.minY)).append(" .. ").append(fmt(boundingBox.maxY)).append("]")
+            .append(" ySize=").append(fmt(ySize)).append(" yOffset=").append(fmt(yOffset))
+            .append(" drift=").append(fmt(drift))
+            .append(" onGround=").append(onGround)
+            .append(" motionY=").append(fmt(motionY))
+            .append(" fallDist=").append(fmt(fallDistance));
+
+        if (worldObj != null) {
+            int bx = MathHelper.floor_double(posX);
+            int bz = MathHelper.floor_double(posZ);
+            int by = MathHelper.floor_double(boundingBox.minY - 0.0625D);
+            Block below = worldObj.getBlock(bx, by, bz);
+            sb.append(" | below=").append(below == null ? "null" : Block.blockRegistry.getNameForObject(below))
+                .append("@").append(bx).append(",").append(by).append(",").append(bz);
+
+            if (below != null) {
+                // Raw singleton bounds vs the box the collision code would actually hand out.
+                sb.append(" rawBounds=[").append(fmt(below.getBlockBoundsMinY())).append(" .. ")
+                    .append(fmt(below.getBlockBoundsMaxY())).append("]");
+                AxisAlignedBB bb = below.getCollisionBoundingBoxFromPool(worldObj, bx, by, bz);
+                sb.append(" pooledTop=").append(bb == null ? "none" : fmt(bb.maxY));
+                if (bb != null)
+                    sb.append(" overlapping=").append(boundingBox.minY < bb.maxY - 1.0E-7D);
+            }
+
+            // What the mover would actually see if it tried to fall half a block right now.
+            List collisions = worldObj.getCollidingBoundingBoxes(this, boundingBox.addCoord(0.0D, -0.5D, 0.0D));
+            sb.append(" collidersBelow=").append(collisions == null ? -1 : collisions.size());
+        }
+
+        LogWriter.info(sb.toString());
     }
 
     @Override
@@ -1699,6 +1774,13 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
                 if (bb == null)
                     continue;
                 yy = bb.maxY;
+                if (HITBOX_DEBUG) {
+                    LogWriter.info("[HITBOX][getStartYPos] scan " + i + "," + ii + "," + k
+                        + " block=" + Block.blockRegistry.getNameForObject(block)
+                        + " meta=" + worldObj.getBlockMetadata(i, ii, k)
+                        + " rawBounds=[" + fmt(block.getBlockBoundsMinY()) + " .. " + fmt(block.getBlockBoundsMaxY()) + "]"
+                        + " pooledTop=" + fmt(bb.maxY) + " -> returning " + fmt(yy));
+                }
                 break;
             }
         }
@@ -1812,6 +1894,7 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
         if (this.motionY > 0.4000000059604645D) {
             this.motionY = 0.4000000059604645D;
         }
+        logHitbox("knockBack");
     }
 
     @Override
