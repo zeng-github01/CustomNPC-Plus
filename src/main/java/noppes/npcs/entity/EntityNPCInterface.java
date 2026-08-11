@@ -1686,7 +1686,6 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
                     break;
                 }
                 Block block = worldObj.getBlock(i, ii, k);
-                block.setBlockBoundsBasedOnState(worldObj, i, ii, k);
                 AxisAlignedBB bb = block.getCollisionBoundingBoxFromPool(worldObj, i, ii, k);
                 if (bb != null) {
                     yy = bb.maxY;
@@ -1696,7 +1695,6 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
                 Block block = worldObj.getBlock(i, ii, k);
                 if (block == null || block == Blocks.air)
                     continue;
-                block.setBlockBoundsBasedOnState(worldObj, i, ii, k);
                 AxisAlignedBB bb = block.getCollisionBoundingBoxFromPool(worldObj, i, ii, k);
                 if (bb == null)
                     continue;

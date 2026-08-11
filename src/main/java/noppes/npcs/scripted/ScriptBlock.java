@@ -175,7 +175,6 @@ public class ScriptBlock implements IBlock {
     }
 
     public boolean canCollide(double maxVolume) {
-        block.setBlockBoundsBasedOnState(world.getMCWorld(), getX(), getY(), getZ());
         AxisAlignedBB alignedBB = block.getCollisionBoundingBoxFromPool(world.getMCWorld(), getX(), getY(), getZ());
         if (alignedBB == null) {
             return false;
