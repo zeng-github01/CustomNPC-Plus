@@ -1358,6 +1358,7 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
     }
 
     public static boolean HITBOX_DEBUG = true;
+    private static boolean loggingHitbox = false;
     private boolean debugWasOnGround = false;
 
     private static String fmt(double d) {
@@ -1366,11 +1367,23 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
 
     /**
      * Temporary instrumentation for the npc hitbox clipping investigation.
+     * Never touches an unloaded chunk -- updateHitbox runs during entity NBT load, and a
+     * forced chunk load there re-enters this method through the entities it loads.
      */
     public void logHitbox(String stage) {
-        if (!HITBOX_DEBUG)
+        if (!HITBOX_DEBUG || loggingHitbox)
             return;
 
+        loggingHitbox = true;
+        try {
+            buildHitboxLog(stage);
+        } catch (Throwable ignored) {
+        } finally {
+            loggingHitbox = false;
+        }
+    }
+
+    private void buildHitboxLog(String stage) {
         String side = worldObj != null && worldObj.isRemote ? "CLIENT" : "SERVER";
 
         // Vanilla keeps boundingBox.minY == posY - yOffset + ySize. Any drift here means the
@@ -1390,13 +1403,15 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
             .append(" motionY=").append(fmt(motionY))
             .append(" fallDist=").append(fmt(fallDistance));
 
-        if (worldObj != null) {
-            int bx = MathHelper.floor_double(posX);
-            int bz = MathHelper.floor_double(posZ);
-            int by = MathHelper.floor_double(boundingBox.minY - 0.0625D);
+        int bx = MathHelper.floor_double(posX);
+        int bz = MathHelper.floor_double(posZ);
+        int by = MathHelper.floor_double(boundingBox.minY - 0.0625D);
+
+        if (worldObj != null && worldObj.blockExists(bx, by, bz)) {
             Block below = worldObj.getBlock(bx, by, bz);
             sb.append(" | below=").append(below == null ? "null" : Block.blockRegistry.getNameForObject(below))
-                .append("@").append(bx).append(",").append(by).append(",").append(bz);
+                .append("@").append(bx).append(",").append(by).append(",").append(bz)
+                .append(" meta=").append(worldObj.getBlockMetadata(bx, by, bz));
 
             if (below != null) {
                 // Raw singleton bounds vs the box the collision code would actually hand out.
@@ -1411,6 +1426,8 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
             // What the mover would actually see if it tried to fall half a block right now.
             List collisions = worldObj.getCollidingBoundingBoxes(this, boundingBox.addCoord(0.0D, -0.5D, 0.0D));
             sb.append(" collidersBelow=").append(collisions == null ? -1 : collisions.size());
+        } else {
+            sb.append(" | chunkNotLoaded");
         }
 
         LogWriter.info(sb.toString());
