@@ -107,7 +107,7 @@ public class AbilityHazard extends AbilityZone implements IAbilityHazard {
         readZoneNBT(nbt, 300);
         this.radius = nbt.getFloat("radius");
         this.damagePerSecond = nbt.getFloat("damagePerSecond");
-        this.damageInterval = nbt.getInteger("damageInterval");
+        setDamageInterval(nbt.getInteger("damageInterval"));
         this.affectsCaster = nbt.getBoolean("affectsCaster");
     }
 
@@ -138,7 +138,7 @@ public class AbilityHazard extends AbilityZone implements IAbilityHazard {
     }
 
     public void setDamageInterval(int damageInterval) {
-        this.damageInterval = damageInterval;
+        this.damageInterval = Math.max(EntityAbilityZone.MIN_DAMAGE_INTERVAL, damageInterval);
     }
 
     public boolean isAffectsCaster() {
@@ -171,6 +171,7 @@ public class AbilityHazard extends AbilityZone implements IAbilityHazard {
             FieldDef.row(
                 FieldDef.floatField("gui.dps", this::getDamagePerSecond, this::setDamagePerSecond),
                 FieldDef.intField("gui.interval", this::getDamageInterval, this::setDamageInterval)
+                    .range(EntityAbilityZone.MIN_DAMAGE_INTERVAL, 2000)
             ),
             FieldDef.boolField("ability.affectsCaster", this::isAffectsCaster, this::setAffectsCaster)
                 .hover("ability.hover.affectsCaster"),

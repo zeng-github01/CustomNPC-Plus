@@ -690,14 +690,7 @@ public abstract class AbilityZone extends Ability {
 
     @SideOnly(Side.CLIENT)
     protected void addPresetFieldDef(List<FieldDef> defs) {
-        defs.add(FieldDef.subGuiField("gui.applyPreset",
-            SubGuiZonePresetSelector::new,
-            gui -> {
-                SubGuiZonePresetSelector selector = (SubGuiZonePresetSelector) gui;
-                if (selector.selectedPreset != null) {
-                    applyPresetDefaults(selector.selectedPreset);
-                }
-            }));
+        defs.add(SubGuiZonePresetSelector.createPresetField(this::applyPresetDefaults));
     }
 
     @SideOnly(Side.CLIENT)

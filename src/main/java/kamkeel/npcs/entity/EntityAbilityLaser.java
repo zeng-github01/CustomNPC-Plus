@@ -264,18 +264,21 @@ public class EntityAbilityLaser extends EntityEnergyProjectile {
             Vec3 anchorPos = AnchorPointHelper.calculateAnchorPosition(livingOwner, anchorData);
             setPosition(anchorPos.xCoord, anchorPos.yCoord, anchorPos.zCoord);
 
-            Entity targetEntity = getTargetEntity();
-            if (targetEntity instanceof EntityLivingBase && targetEntity.isEntityAlive()) {
-                EntityLivingBase target = (EntityLivingBase) targetEntity;
-                double dx = target.posX - anchorPos.xCoord;
-                double dy = (target.posY + target.getEyeHeight() - 0.4) - anchorPos.yCoord;
-                double dz = target.posZ - anchorPos.zCoord;
-                double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                if (len > 0.0001) {
-                    dirX = dx / len;
-                    dirY = dy / len;
-                    dirZ = dz / len;
-                }
+            // Converge on the point the owner is aiming at, not on the target itself. Aiming
+            // straight at the target would re-derive the direction every tick and ignore the
+            // rotation the owner is actually allowed to reach, which is what track speed and
+            // rotation lock constrain.
+            double aimX = livingOwner.posX + dirX * maxLength;
+            double aimY = livingOwner.posY + livingOwner.getEyeHeight() + dirY * maxLength;
+            double aimZ = livingOwner.posZ + dirZ * maxLength;
+            double dx = aimX - anchorPos.xCoord;
+            double dy = aimY - anchorPos.yCoord;
+            double dz = aimZ - anchorPos.zCoord;
+            double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            if (len > 0.0001) {
+                dirX = dx / len;
+                dirY = dy / len;
+                dirZ = dz / len;
             }
         } else {
             Vec3 direction = Vec3.createVectorHelper(dirX, dirY, dirZ);

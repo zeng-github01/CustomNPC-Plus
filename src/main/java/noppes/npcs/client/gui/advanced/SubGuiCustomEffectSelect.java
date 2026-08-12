@@ -3,6 +3,8 @@ package noppes.npcs.client.gui.advanced;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.gui.GuiButton;
+import kamkeel.npcs.controllers.data.ability.conditions.ConditionHasEffect;
+import noppes.npcs.client.gui.builder.FieldDef;
 import noppes.npcs.client.gui.util.GuiCustomScroll;
 import noppes.npcs.client.gui.util.GuiNpcButton;
 import noppes.npcs.client.gui.util.GuiNpcTextField;
@@ -24,6 +26,31 @@ import java.util.Map;
  */
 @SideOnly(Side.CLIENT)
 public class SubGuiCustomEffectSelect extends SubGuiInterface implements ICustomScrollListener, ITextfieldListener {
+
+    /**
+     * Builds the condition editor's effect-select field.
+     * <p>
+     * This lives here rather than in ConditionHasEffect because the lambdas below carry this
+     * class in their method descriptors. The condition is a both-side class, and @SideOnly does
+     * not strip the synthetic lambda methods it generates - so anything reflecting over its
+     * declared methods on a server would resolve those descriptors and fail to find this type.
+     */
+    public static FieldDef createSelectField(ConditionHasEffect condition) {
+        return FieldDef.subGuiField("condition.select_effect",
+                () -> new SubGuiCustomEffectSelect(condition.getEffectId(), condition.getEffectIndex()),
+                gui -> {
+                    SubGuiCustomEffectSelect sel = (SubGuiCustomEffectSelect) gui;
+                    if (sel.getSelectedEffectId() >= 0) {
+                        condition.setEffect(sel.getSelectedEffectId(), sel.getSelectedIndex());
+                    }
+                })
+            .buttonLabel(() -> {
+                if (condition.getEffectId() < 0) return "None";
+                CustomEffect effect = condition.getEffect();
+                return effect != null ? effect.getName() : "ID:" + condition.getEffectId();
+            })
+            .clearable(() -> condition.setEffect(-1, 0));
+    }
 
     private GuiCustomScroll scroll;
     private final HashMap<String, Integer> displayNameToId = new HashMap<>();

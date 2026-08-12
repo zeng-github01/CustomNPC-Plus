@@ -1,6 +1,8 @@
 package noppes.npcs.client.gui.advanced;
 
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.util.StatCollector;
+import noppes.npcs.client.gui.builder.FieldDef;
 import noppes.npcs.client.gui.util.GuiCustomScroll;
 import noppes.npcs.client.gui.util.GuiNpcButton;
 import noppes.npcs.client.gui.util.GuiNpcLabel;
@@ -11,6 +13,7 @@ import noppes.npcs.client.gui.util.SubGuiInterface;
 import noppes.npcs.controllers.MagicController;
 import noppes.npcs.controllers.data.Magic;
 import noppes.npcs.controllers.data.MagicData;
+import noppes.npcs.controllers.data.MagicEntry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +38,30 @@ public class SubGuiAbilityMagic extends SubGuiInterface implements ICustomScroll
     private String search = "";
 
     private GuiNpcTextField splitField;
+
+    /**
+     * Builds the ability editor's magic field.
+     * <p>
+     * This lives here rather than in Ability because the lambdas below carry this class in
+     * their method descriptors. Ability is a both-side class, and anything reflecting over its
+     * declared methods on a server - Nashorn's adapter generator, for one - would resolve those
+     * descriptors and fail to find this client-only type.
+     */
+    public static FieldDef createMagicField(MagicData magicData) {
+        return FieldDef.subGuiField("ability.magic.editor",
+                () -> new SubGuiAbilityMagic(magicData.copy()),
+                gui -> {
+                    MagicData result = ((SubGuiAbilityMagic) gui).magicData;
+                    magicData.getMagics().clear();
+                    for (Map.Entry<Integer, MagicEntry> e : result.getMagics().entrySet()) {
+                        magicData.getMagics().put(e.getKey(), e.getValue());
+                    }
+                })
+            .buttonLabel(() -> magicData.isEmpty()
+                ? StatCollector.translateToLocal("ability.magic.usesCaster")
+                : magicData.getMagics().size() + " Magic(s)")
+            .tab("General");
+    }
 
     public SubGuiAbilityMagic(MagicData data) {
         this.magicData = data;

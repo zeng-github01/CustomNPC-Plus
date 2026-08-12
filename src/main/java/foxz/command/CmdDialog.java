@@ -6,6 +6,7 @@ import foxz.commandhelper.annotations.SubCommand;
 import foxz.commandhelper.permissions.OpOnly;
 import foxz.commandhelper.permissions.ParamCheck;
 import kamkeel.npcs.controllers.SyncController;
+import kamkeel.npcs.network.enums.SyncType;
 import net.minecraft.command.CommandBase;
 import net.minecraft.entity.player.EntityPlayer;
 import noppes.npcs.NoppesUtilServer;
@@ -90,7 +91,7 @@ public class CmdDialog extends ChMcLogger {
     )
     public boolean reload(String args[]) {
         new DialogController().load();
-        SyncController.syncAllDialogs();
+        SyncController.syncAll(SyncType.DIALOG_CATEGORY);
         return true;
     }
 

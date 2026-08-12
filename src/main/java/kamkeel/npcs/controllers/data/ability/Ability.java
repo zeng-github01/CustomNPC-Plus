@@ -840,19 +840,7 @@ public abstract class Ability implements IAbility, IAbilityAction {
                 return sb.toString();
             }).tab("General"));
 
-            defs.add(FieldDef.subGuiField("ability.magic.editor",
-                () -> new SubGuiAbilityMagic(magicData.copy()),
-                gui -> {
-                    MagicData result = ((SubGuiAbilityMagic) gui).magicData;
-                    magicData.getMagics().clear();
-                    for (Map.Entry<Integer, MagicEntry> e : result.getMagics().entrySet()) {
-                        magicData.getMagics().put(e.getKey(), e.getValue());
-                    }
-                })
-                .buttonLabel(() -> magicData.isEmpty()
-                    ? StatCollector.translateToLocal("ability.magic.usesCaster")
-                    : magicData.getMagics().size() + " Magic(s)")
-                .tab("General"));
+            defs.add(SubGuiAbilityMagic.createMagicField(magicData));
         }
 
         // ── Target tab ───────────────────────────────────────────────
@@ -1062,10 +1050,11 @@ public abstract class Ability implements IAbility, IAbilityAction {
                 return null;
         }
 
-        telegraph.setDurationTicks(windUpTicks);
+        int windUp = getWindUpTicks();
+        telegraph.setDurationTicks(windUp);
         telegraph.setColor(windUpColor);
         telegraph.setWarningColor(activeColor);
-        telegraph.setWarningStartTick(Math.max(5, windUpTicks / 4));
+        telegraph.setWarningStartTick(Math.max(5, windUp / 4));
         telegraph.setHeightOffset(telegraphHeightOffset);
 
         TelegraphInstance instance = new TelegraphInstance(telegraph, x, y, z, yaw);
@@ -1183,7 +1172,9 @@ public abstract class Ability implements IAbility, IAbilityAction {
         this.burstIndex = 0;
         this.burstEntities.clear();
 
-        if (windUpTicks <= 0) {
+        // Use the effective windup, not the raw field: when the windup is synced to an
+        // animation the raw field is not the duration that actually applies.
+        if (getWindUpTicks() <= 0) {
             this.phase = AbilityPhase.ACTIVE;
         } else {
             this.phase = AbilityPhase.WINDUP;
@@ -1205,7 +1196,7 @@ public abstract class Ability implements IAbility, IAbilityAction {
 
         switch (phase) {
             case WINDUP:
-                if (currentTick >= windUpTicks) {
+                if (currentTick >= getWindUpTicks()) {
                     phase = AbilityPhase.ACTIVE;
                     currentTick = 0;
                     return true;

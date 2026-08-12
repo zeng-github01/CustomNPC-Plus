@@ -97,6 +97,15 @@ public class AbilityProjectile extends Ability implements IAbilityProjectile {
             dz /= len;
         }
 
+        // A rotation-locked NPC cannot turn to follow the target, so it can only hit what its
+        // frozen heading still covers - the same cone the player hit scan uses.
+        if (isRotationLockedForCurrentPhase()) {
+            Vec3 look = caster.getLookVec();
+            if (look != null && (dx * look.xCoord + dy * look.yCoord + dz * look.zCoord) < 0.95) {
+                return;
+            }
+        }
+
         applyAbilityDamageWithDirection(caster, target, damage, knockback, dx, dz);
         world.playSoundAtEntity(caster, "random.bow", 1.0f, 0.8f);
 

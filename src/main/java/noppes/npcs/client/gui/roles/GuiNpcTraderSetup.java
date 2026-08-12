@@ -21,6 +21,7 @@ public class GuiNpcTraderSetup extends GuiContainerNPCInterface2 implements ITex
 
     private final ResourceLocation slot = new ResourceLocation("customnpcs", "textures/gui/slot.png");
     private RoleTrader role;
+    private boolean marketRelinked = false;
 
     // Currency cost textfield IDs start at 100 (100-117 for slots 0-17)
     private static final int CURRENCY_FIELD_ID_START = 100;
@@ -116,8 +117,14 @@ public class GuiNpcTraderSetup extends GuiContainerNPCInterface2 implements ITex
 
     @Override
     public void save() {
-        PacketClient.sendClient(new TraderMarketSavePacket(role.marketName, false));
+        // Linking to a different market already replaced the server's role with that market's
+        // data. Pushing this GUI's pre-link state back would overwrite the market being linked to.
+        if (marketRelinked)
+            return;
+
+        // Save the role first so the market is written from the edited data, not the stale data.
         PacketClient.sendClient(new RoleSavePacket(role.writeToNBT(new NBTTagCompound())));
+        PacketClient.sendClient(new TraderMarketSavePacket(role.marketName, false));
     }
 
     @Override
@@ -129,6 +136,7 @@ public class GuiNpcTraderSetup extends GuiContainerNPCInterface2 implements ITex
             String name = guiNpcTextField.getText();
             if (!name.equalsIgnoreCase(role.marketName)) {
                 role.marketName = name;
+                marketRelinked = true;
                 PacketClient.sendClient(new TraderMarketSavePacket(role.marketName, true));
             }
             return;

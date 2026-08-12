@@ -10,7 +10,7 @@ import java.util.List;
 public abstract class ScriptHandler implements IScriptHandler {
     public List<IScriptUnit> scripts = new ArrayList<>();
     protected String scriptLanguage = "ECMAScript";
-    protected boolean enabled = false;
+    protected boolean enabled = true;
     protected long lastInited = -1;
 
     protected boolean canRunScripts() {

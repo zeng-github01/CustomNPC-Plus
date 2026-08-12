@@ -14,6 +14,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import noppes.npcs.CustomNpcsPermissions;
+import noppes.npcs.roles.RoleTrader;
 
 import java.io.IOException;
 
@@ -63,7 +64,13 @@ public final class RoleSavePacket extends AbstractPacket {
         if (!PacketUtil.verifyItemPacket(packetName, EnumItemPacketType.WAND, player))
             return;
 
-        npc.roleInterface.readFromNBT(ByteBufUtils.readNBT(in));
+        NBTTagCompound roleCompound = ByteBufUtils.readNBT(in);
+        if (npc.roleInterface instanceof RoleTrader) {
+            // An admin edit wins over the linked market; the market is written from it afterwards.
+            ((RoleTrader) npc.roleInterface).readFromNBT(roleCompound, false);
+        } else {
+            npc.roleInterface.readFromNBT(roleCompound);
+        }
         npc.updateClient = true;
     }
 }

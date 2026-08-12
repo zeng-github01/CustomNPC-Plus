@@ -1,6 +1,6 @@
 package noppes.npcs.client;
 
-import kamkeel.npcs.network.enums.EnumSyncType;
+import kamkeel.npcs.network.enums.SyncType;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import noppes.npcs.client.controllers.MusicController;
@@ -18,8 +18,8 @@ import noppes.npcs.controllers.data.PlayerData;
 import noppes.npcs.controllers.data.SkinOverlay;
 import noppes.npcs.util.CacheHashMap;
 
-import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -32,14 +32,14 @@ public class ClientCacheHandler {
 
     private static String activeServerKey = "";
     private static String lastServerKey = "";
-    private static final Map<String, EnumMap<EnumSyncType, Integer>> clientRevisionCache = new HashMap<>();
+    private static final Map<String, Map<SyncType, Integer>> clientRevisionCache = new HashMap<>();
 
     public static Party party;
 
     public static boolean allowProfiles = true;
     public static boolean allowParties = true;
 
-    public static void setActiveServer(String serverKey, EnumMap<EnumSyncType, Integer> serverRevisions) {
+    public static void setActiveServer(String serverKey, Map<SyncType, Integer> serverRevisions) {
         String normalizedKey = serverKey == null ? "" : serverKey;
         String previousKey = activeServerKey == null ? "" : activeServerKey;
         lastServerKey = previousKey;
@@ -54,9 +54,9 @@ public class ClientCacheHandler {
             return;
         }
 
-        EnumMap<EnumSyncType, Integer> cached = clientRevisionCache.computeIfAbsent(
+        Map<SyncType, Integer> cached = clientRevisionCache.computeIfAbsent(
             activeServerKey,
-            ignored -> new EnumMap<>(EnumSyncType.class)
+            ignored -> new LinkedHashMap<>()
         );
         if (serverRevisions != null && !serverRevisions.isEmpty()) {
             cached.keySet().retainAll(serverRevisions.keySet());
@@ -67,19 +67,19 @@ public class ClientCacheHandler {
         return lastServerKey == null ? "" : lastServerKey;
     }
 
-    public static EnumMap<EnumSyncType, Integer> getCachedRevisionsForServer(String serverKey) {
+    public static Map<SyncType, Integer> getCachedRevisionsForServer(String serverKey) {
         String key = serverKey == null ? "" : serverKey;
         if (key.isEmpty()) {
-            return new EnumMap<>(EnumSyncType.class);
+            return new LinkedHashMap<>();
         }
-        EnumMap<EnumSyncType, Integer> revisions = clientRevisionCache.get(key);
+        Map<SyncType, Integer> revisions = clientRevisionCache.get(key);
         if (revisions == null) {
-            return new EnumMap<>(EnumSyncType.class);
+            return new LinkedHashMap<>();
         }
-        return new EnumMap<>(revisions);
+        return new LinkedHashMap<>(revisions);
     }
 
-    public static void updateClientRevision(EnumSyncType type, int revision) {
+    public static void updateClientRevision(SyncType type, int revision) {
         if (revision < 0) {
             return;
         }
@@ -87,9 +87,9 @@ public class ClientCacheHandler {
         if (key.isEmpty()) {
             return;
         }
-        EnumMap<EnumSyncType, Integer> revisions = clientRevisionCache.computeIfAbsent(
+        Map<SyncType, Integer> revisions = clientRevisionCache.computeIfAbsent(
             key,
-            ignored -> new EnumMap<>(EnumSyncType.class)
+            ignored -> new LinkedHashMap<>()
         );
         revisions.put(type, revision);
     }
@@ -126,14 +126,11 @@ public class ClientCacheHandler {
         ClientCacheHandler.playerAnimations.clear();
         ProfileClientConfig.reset();
 
-        // Clear Texture Caches
         GuiSoundSelection.cachedDomains.clear();
         GuiTextureSelection.cachedTextures.clear();
 
-        // Clear music/bard sounds
         MusicController.Instance.stopAllSounds();
 
-        // Clear Quest Tracker
         HudComponent component = ClientHudManager.getInstance().getHudComponents().get(EnumHudComponent.QuestTracker);
         if (component != null) {
             component.loadData(new NBTTagCompound());
@@ -146,7 +143,6 @@ public class ClientCacheHandler {
         ClientCacheHandler.customOverlays.clear();
         ClientCacheHandler.skinOverlays.clear();
 
-        // Clear Texture Caches
         GuiSoundSelection.cachedDomains.clear();
         GuiTextureSelection.cachedTextures.clear();
     }

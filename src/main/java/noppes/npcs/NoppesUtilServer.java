@@ -640,7 +640,7 @@ public class NoppesUtilServer {
             playerdata.save();
         }
         if (pl != null) {
-            SyncController.syncPlayer((EntityPlayerMP) pl);
+            SyncController.dispatchSyncForAllTypes((EntityPlayerMP) pl);
         }
         sendPlayerData(type, player, name);
     }
@@ -1229,7 +1229,7 @@ public class NoppesUtilServer {
         playerdata.save();
 
         if (pl != null) {
-            SyncController.syncPlayer((EntityPlayerMP) pl);
+            SyncController.dispatchSyncForAllTypes((EntityPlayerMP) pl);
         }
     }
 
@@ -1261,7 +1261,7 @@ public class NoppesUtilServer {
 
         playerdata.save();
         if (pl != null) {
-            SyncController.syncPlayer((EntityPlayerMP) pl);
+            SyncController.dispatchSyncForAllTypes((EntityPlayerMP) pl);
         }
     }
 }

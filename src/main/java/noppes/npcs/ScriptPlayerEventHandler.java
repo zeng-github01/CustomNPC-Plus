@@ -9,7 +9,9 @@ import kamkeel.npcs.addon.DBCAddon;
 import kamkeel.npcs.controllers.AbilityController;
 import kamkeel.npcs.controllers.AttributeController;
 import kamkeel.npcs.controllers.data.attribute.tracker.PlayerAttributeTracker;
-import kamkeel.npcs.controllers.SyncController;
+import kamkeel.npcs.controllers.sync.handlers.PlayerAbilitySyncHelper;
+import kamkeel.npcs.controllers.sync.handlers.PlayerDataSyncHandler;
+import kamkeel.npcs.controllers.sync.handlers.PlayerEffectSyncHelper;
 import kamkeel.npcs.controllers.data.ability.Ability;
 import kamkeel.npcs.controllers.data.ability.type.AbilityCounter;
 import kamkeel.npcs.controllers.data.ability.type.AbilityDefend;
@@ -141,7 +143,7 @@ public class ScriptPlayerEventHandler {
                 }
 
                 if (playerData.updateClient) {
-                    SyncController.syncPlayerData((EntityPlayerMP) player, true);
+                    PlayerDataSyncHandler.syncPlayerData((EntityPlayerMP) player, true);
                     playerData.updateClient = false;
                 }
 
@@ -151,8 +153,8 @@ public class ScriptPlayerEventHandler {
 
                 if (player.ticksExisted % 10 == 0) {
                     EntityPlayerMP mp = (EntityPlayerMP) player;
-                    SyncController.syncEffects(mp);
-                    SyncController.syncAbilityCooldowns(mp);
+                    PlayerEffectSyncHelper.syncEffects(mp);
+                    PlayerAbilitySyncHelper.syncAbilityCooldowns(mp);
                     PlayerAbilitySyncPacket.sendToPlayer(mp);
                     playerData.abilityData.ensureLockStateClear();
                 }

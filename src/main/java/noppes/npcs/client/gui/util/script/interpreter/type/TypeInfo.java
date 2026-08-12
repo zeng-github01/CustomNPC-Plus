@@ -325,78 +325,94 @@ public class TypeInfo {
      * @return A TypeInfo preserving the generic structure, or null if type is null
      */
     public static TypeInfo fromGenericType(Type type) {
+        return fromGenericType(type, new HashSet<TypeVariable<?>>());
+    }
+
+    /**
+     * @param resolving type variables whose bounds are currently being expanded, so a
+     *                  self-referential bound such as {@code E extends Enum<E>} terminates
+     */
+    private static TypeInfo fromGenericType(Type type, Set<TypeVariable<?>> resolving) {
         if (type == null) return null;
-        
+
         if (type instanceof Class<?>) {
             // Plain class - no generic info
             return fromClass((Class<?>) type);
         }
-        
+
         if (type instanceof ParameterizedType) {
             // Generic type like List<String>
             ParameterizedType paramType = (ParameterizedType) type;
             Type rawType = paramType.getRawType();
-            
+
             if (!(rawType instanceof Class<?>)) {
                 // Edge case - should not happen normally
-                return rawType != null ? fromGenericType(rawType) : null;
+                return rawType != null ? fromGenericType(rawType, resolving) : null;
             }
-            
+
             // Get the raw type as TypeInfo
             TypeInfo rawTypeInfo = fromClass((Class<?>) rawType);
-            
+
             // Recursively convert type arguments
             Type[] typeArgs = paramType.getActualTypeArguments();
             List<TypeInfo> appliedArgs = new ArrayList<>(typeArgs.length);
             for (Type arg : typeArgs) {
-                TypeInfo argInfo = fromGenericType(arg);
+                TypeInfo argInfo = fromGenericType(arg, resolving);
                 if (argInfo != null) {
                     appliedArgs.add(argInfo);
                 }
             }
-            
+
             // Return a parameterized TypeInfo
             if (!appliedArgs.isEmpty()) {
                 return rawTypeInfo.parameterize(appliedArgs);
             }
             return rawTypeInfo;
         }
-        
+
         if (type instanceof GenericArrayType) {
             // Array of generic type, e.g. T[] or List<String>[]
             GenericArrayType arrayType = (GenericArrayType) type;
-            TypeInfo elementType = fromGenericType(arrayType.getGenericComponentType());
+            TypeInfo elementType = fromGenericType(arrayType.getGenericComponentType(), resolving);
             if (elementType != null) {
                 return arrayOf(elementType);
             }
             return fromClass(Object[].class);
         }
-        
+
         if (type instanceof TypeVariable<?>) {
             TypeVariable<?> typeVar = (TypeVariable<?>) type;
             String varName = typeVar.getName();
-            // Check for bounds - if bounded, create typeParameter with bound
-            Type[] bounds = typeVar.getBounds();
-            if (bounds != null && bounds.length > 0 && bounds[0] != Object.class) {
-                return TypeInfo.typeParameter(varName, fromGenericType(bounds[0]));
+            // Already expanding this variable - emit it unbounded rather than recursing forever
+            if (!resolving.add(typeVar)) {
+                return TypeInfo.typeParameter(varName);
             }
-            return TypeInfo.typeParameter(varName);
+            try {
+                // Check for bounds - if bounded, create typeParameter with bound
+                Type[] bounds = typeVar.getBounds();
+                if (bounds != null && bounds.length > 0 && bounds[0] != Object.class) {
+                    return TypeInfo.typeParameter(varName, fromGenericType(bounds[0], resolving));
+                }
+                return TypeInfo.typeParameter(varName);
+            } finally {
+                resolving.remove(typeVar);
+            }
         }
-        
+
         if (type instanceof WildcardType) {
             // Wildcard like ? or ? extends Number or ? super Integer
             WildcardType wildcard = (WildcardType) type;
             Type[] upperBounds = wildcard.getUpperBounds();
-            
+
             // Use the upper bound if available (most useful for ? extends T)
             if (upperBounds.length > 0 && upperBounds[0] != Object.class) {
-                return fromGenericType(upperBounds[0]);
+                return fromGenericType(upperBounds[0], resolving);
             }
-            
+
             // For ? super T or plain ?, just use Object
             return fromClass(Object.class);
         }
-        
+
         // Unknown type - shouldn't happen in practice
         return null;
     }

@@ -1,7 +1,8 @@
 package noppes.npcs.controllers;
 
 import kamkeel.npcs.controllers.SyncController;
-import kamkeel.npcs.network.enums.EnumSyncType;
+import kamkeel.npcs.controllers.sync.handlers.DialogCategorySyncHandler;
+import kamkeel.npcs.network.enums.SyncType;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -75,6 +76,7 @@ public class DialogController implements IDialogHandler {
                 if (!file.isDirectory())
                     continue;
                 DialogCategory category = loadCategoryDir(file);
+                List<Dialog> reassigned = new ArrayList<Dialog>();
                 Iterator<Integer> ite = category.dialogs.keySet().iterator();
                 while (ite.hasNext()) {
                     int id = ite.next();
@@ -82,11 +84,47 @@ public class DialogController implements IDialogHandler {
                         lastUsedDialogID = id;
                     Dialog dialog = category.dialogs.get(id);
                     if (dialogs.containsKey(id)) {
-                        LogWriter.error("Duplicate id " + dialog.id + " from category " + category.title);
+                        // Dialog IDs live in the filename, not inside the JSON body,
+                        // so a simple rename permanently resolves the conflict.
+                        File catDir = new File(getDir(), category.title);
+
+                        // Find the next free ID. It has to clear three things: the ids already
+                        // registered globally, the ids this category still holds but has not
+                        // reached yet, and any file already on disk - renameTo overwrites
+                        // silently on POSIX, so landing on an existing file would destroy it.
+                        int newId = lastUsedDialogID;
+                        do {
+                            newId++;
+                        } while (dialogs.containsKey(newId)
+                            || category.dialogs.containsKey(newId)
+                            || new File(catDir, newId + ".json").exists());
+                        lastUsedDialogID = newId;
+
+                        File oldFile = new File(catDir, id + ".json");
+                        File newFile = new File(catDir, newId + ".json");
+                        boolean renamed = oldFile.renameTo(newFile);
+
+                        dialog.id = newId;
                         ite.remove();
+                        reassigned.add(dialog);
+
+                        if (renamed) {
+                            LogWriter.info("Dialog ID conflict: reassigned \"" + dialog.title
+                                + "\" from id " + id + " to " + newId
+                                + " in category \"" + category.title + "\"");
+                        } else {
+                            LogWriter.error("Dialog ID conflict: could not rename file for \""
+                                + dialog.title + "\" (id " + id
+                                + " in category \"" + category.title + "\") to " + newId);
+                        }
                     } else {
                         dialogs.put(id, dialog);
                     }
+                }
+                // Re-register reassigned dialogs under their new IDs.
+                for (Dialog dialog : reassigned) {
+                    dialogs.put(dialog.id, dialog);
+                    category.dialogs.put(dialog.id, dialog);
                 }
                 lastUsedCatID++;
                 category.id = lastUsedCatID;
@@ -239,7 +277,7 @@ public class DialogController implements IDialogHandler {
                 dir.mkdirs();
         }
         categories.put(category.id, category);
-        SyncController.syncUpdate(EnumSyncType.DIALOG_CATEGORY, -1, SyncController.updateDialogCat(category));
+        SyncController.syncUpdate(SyncType.DIALOG_CATEGORY, -1, DialogCategorySyncHandler.serializeCategory(category));
     }
 
     public void removeCategory(int category) {
@@ -252,7 +290,7 @@ public class DialogController implements IDialogHandler {
         for (int dia : cat.dialogs.keySet())
             dialogs.remove(dia);
         categories.remove(category);
-        SyncController.syncRemove(EnumSyncType.DIALOG_CATEGORY, category);
+        SyncController.syncRemove(SyncType.DIALOG_CATEGORY, category);
     }
 
     private boolean containsCategoryName(String name) {
@@ -302,7 +340,7 @@ public class DialogController implements IDialogHandler {
             if (file2.exists())
                 file2.delete();
             file.renameTo(file2);
-            SyncController.syncUpdate(EnumSyncType.DIALOG, category.id, dialog.writeToNBT(new NBTTagCompound()));
+            SyncController.syncUpdate(SyncType.DIALOG, category.id, dialog.writeToNBT(new NBTTagCompound()));
         } catch (Exception e) {
             LogWriter.except(e);
         }
@@ -316,7 +354,7 @@ public class DialogController implements IDialogHandler {
             return;
         category.dialogs.remove(dialog.id);
         dialogs.remove(dialog.id);
-        SyncController.syncRemove(EnumSyncType.DIALOG, dialog.id);
+        SyncController.syncRemove(SyncType.DIALOG, dialog.id);
     }
 
     private File getDir() {

@@ -1,6 +1,7 @@
 package kamkeel.npcs.command;
 
 import kamkeel.npcs.controllers.SyncController;
+import kamkeel.npcs.network.enums.SyncType;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -93,7 +94,7 @@ public class DialogCommand extends CommandKamkeelBase {
     )
     public void reload(ICommandSender sender, String args[]) {
         new DialogController().load();
-        SyncController.syncAllDialogs();
+        SyncController.syncAll(SyncType.DIALOG_CATEGORY);
         sendResult(sender, "Dialogs Reloaded");
     }
 

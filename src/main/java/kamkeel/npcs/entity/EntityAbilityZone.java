@@ -155,6 +155,9 @@ public class EntityAbilityZone extends Entity implements IEntityAdditionalSpawnD
     // HAZARD-SPECIFIC PROPERTIES
     // ═══════════════════════════════════════════════════════════════════
 
+    /** Floor on how often a hazard pulses, so a small interval cannot turn into a per-tick scan. */
+    public static final int MIN_DAMAGE_INTERVAL = 5;
+
     private float damagePerSecond = 1.0f;
     private int damageInterval = 20;
     private boolean ignoreIFrames = false;
@@ -291,7 +294,7 @@ public class EntityAbilityZone extends Entity implements IEntityAdditionalSpawnD
         zone.shape = shape;
         zone.radius = radius;
         zone.damagePerSecond = damagePerSecond;
-        zone.damageInterval = damageInterval;
+        zone.damageInterval = Math.max(MIN_DAMAGE_INTERVAL, damageInterval);
         zone.ignoreIFrames = ignoreIFrames;
         zone.affectsCaster = affectsCaster;
         zone.durationTicks = durationTicks;
@@ -309,7 +312,6 @@ public class EntityAbilityZone extends Entity implements IEntityAdditionalSpawnD
                 zone.effects.add(e.copy());
             }
         }
-        zone.ticksSinceDamage = damageInterval;
         return zone;
     }
 
@@ -518,7 +520,9 @@ public class EntityAbilityZone extends Entity implements IEntityAdditionalSpawnD
             if (!isInZone(entity)) continue;
 
             if (damagePerSecond > 0) {
-                applyDamage(entity, owner, damagePerSecond);
+                // The configured value is damage per second, so a pulse deals the share of a
+                // second it covers. Applying it whole made the real rate depend on the interval.
+                applyDamage(entity, owner, damagePerSecond * (damageInterval / 20.0f));
             }
 
             applyEffects(entity);
@@ -815,7 +819,7 @@ public class EntityAbilityZone extends Entity implements IEntityAdditionalSpawnD
     public float getDamagePerSecond() { return damagePerSecond; }
     public void setDamagePerSecond(float dps) { this.damagePerSecond = dps; }
     public int getDamageInterval() { return damageInterval; }
-    public void setDamageInterval(int ticks) { this.damageInterval = ticks; }
+    public void setDamageInterval(int ticks) { this.damageInterval = Math.max(MIN_DAMAGE_INTERVAL, ticks); }
     public boolean isAffectsCaster() { return affectsCaster; }
     public void setAffectsCaster(boolean affects) { this.affectsCaster = affects; }
 

@@ -8,13 +8,13 @@ import kamkeel.npcs.network.AbstractPacket;
 import kamkeel.npcs.network.PacketChannel;
 import kamkeel.npcs.network.PacketHandler;
 import kamkeel.npcs.network.enums.EnumPlayerPacket;
-import kamkeel.npcs.network.enums.EnumSyncType;
+import kamkeel.npcs.network.enums.SyncType;
 import kamkeel.npcs.util.ByteBufUtils;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import java.io.IOException;
-import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class SyncRevisionInfoPacket extends AbstractPacket {
@@ -23,12 +23,12 @@ public class SyncRevisionInfoPacket extends AbstractPacket {
 
     private String serverKey = "";
     private String previousServerKey = "";
-    private final EnumMap<EnumSyncType, Integer> revisions = new EnumMap<>(EnumSyncType.class);
+    private final Map<SyncType, Integer> revisions = new LinkedHashMap<>();
 
     public SyncRevisionInfoPacket() {
     }
 
-    public SyncRevisionInfoPacket(String serverKey, String previousServerKey, EnumMap<EnumSyncType, Integer> revisions) {
+    public SyncRevisionInfoPacket(String serverKey, String previousServerKey, Map<SyncType, Integer> revisions) {
         if (serverKey != null) {
             this.serverKey = serverKey;
         }
@@ -56,7 +56,7 @@ public class SyncRevisionInfoPacket extends AbstractPacket {
         ByteBufUtils.writeString(out, serverKey);
         ByteBufUtils.writeString(out, previousServerKey);
         out.writeShort(revisions.size());
-        for (Map.Entry<EnumSyncType, Integer> entry : revisions.entrySet()) {
+        for (Map.Entry<SyncType, Integer> entry : revisions.entrySet()) {
             out.writeInt(entry.getKey().ordinal());
             out.writeInt(entry.getValue());
         }
@@ -71,13 +71,15 @@ public class SyncRevisionInfoPacket extends AbstractPacket {
         String incomingServerKey = ByteBufUtils.readString(in);
         String incomingPreviousKey = ByteBufUtils.readString(in);
         int revisionCount = in.readUnsignedShort();
-        EnumMap<EnumSyncType, Integer> incomingRevisions = new EnumMap<>(EnumSyncType.class);
+        Map<SyncType, Integer> incomingRevisions = new LinkedHashMap<>();
         for (int i = 0; i < revisionCount; i++) {
-            EnumSyncType type = EnumSyncType.values()[in.readInt()];
+            SyncType type = SyncType.byOrdinal(in.readInt());
             int revision = in.readInt();
-            incomingRevisions.put(type, revision);
+            if (type != null) {
+                incomingRevisions.put(type, revision);
+            }
         }
 
-        SyncController.handleClientRevisionReport((EntityPlayerMP) player, incomingServerKey, incomingPreviousKey, incomingRevisions);
+        SyncController.completeLoginRevisionHandshake((EntityPlayerMP) player, incomingServerKey, incomingPreviousKey, incomingRevisions);
     }
 }

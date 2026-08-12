@@ -302,7 +302,7 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
 
     @Override
     public boolean getLeashed() {
-        return false; //Prevents npcs from being leashed
+        return false; // Prevents npcs from being leashed
     }
 
     @Override

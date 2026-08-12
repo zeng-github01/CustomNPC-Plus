@@ -74,6 +74,12 @@ public abstract class AbilityDefend extends Ability implements IAbilityDefend {
         hitCount = 0;
         lastAttacker = null;
         lastDamageTaken = 0.0f;
+        // NPCs reuse one ability instance, so every transient field has to be cleared here.
+        // A leftover pendingCompletion would end the next activation on its first tick.
+        pendingDefendAnimation = null;
+        defendAnimEndTick = -1;
+        lastDefendTick = -1;
+        pendingCompletion = false;
     }
 
     @Override

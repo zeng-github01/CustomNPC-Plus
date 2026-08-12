@@ -429,6 +429,9 @@ public class GuiProfiles extends GuiCNPCInventory implements ISubGuiListener, IC
     }
 
     private boolean isMouseOverScrollbar(int mouseX, int mouseY) {
+        if (maxScrollY <= 0)
+            return false;
+
         int scrollbarX = guiLeft + xSize + 30;
         int scrollbarY = guiTop + 27;
         int scrollbarHeight = ySize - 35;

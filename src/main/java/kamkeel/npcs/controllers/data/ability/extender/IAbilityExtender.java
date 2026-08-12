@@ -3,6 +3,7 @@ package kamkeel.npcs.controllers.data.ability.extender;
 import kamkeel.npcs.controllers.data.ability.conditions.AbilityCondition;
 import kamkeel.npcs.controllers.data.ability.enums.AbilityPhase;
 import kamkeel.npcs.controllers.data.ability.Ability;
+import kamkeel.npcs.entity.EntityEnergyBarrier;
 import net.minecraft.entity.EntityLivingBase;
 
 /**
@@ -106,6 +107,21 @@ public interface IAbilityExtender {
      */
     default float modifyBarrierHealth(Ability ability, EntityLivingBase caster, float baseHealth) {
         return baseHealth;
+    }
+
+    /**
+     * Called when a barrier entity takes a melee hit, allowing extenders to scale the damage.
+     * A barrier is a plain Entity, so no LivingHurtEvent fires for it and an extender has no
+     * other opportunity to scale melee against it the way it scales {@link #modifyBarrierHealth}.
+     * Cumulative: all extenders apply in sequence, each receiving the previous output.
+     *
+     * @param barrier    The barrier being hit
+     * @param attacker   The entity dealing the hit
+     * @param baseDamage The damage after the barrier's own melee multiplier
+     * @return The modified damage value
+     */
+    default float modifyBarrierMeleeDamage(EntityEnergyBarrier barrier, EntityLivingBase attacker, float baseDamage) {
+        return baseDamage;
     }
 
     /**

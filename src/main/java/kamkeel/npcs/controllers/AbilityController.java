@@ -32,6 +32,7 @@ import kamkeel.npcs.controllers.data.ability.type.AbilitySlam;
 import kamkeel.npcs.controllers.data.ability.type.AbilityTeleport;
 import kamkeel.npcs.controllers.data.ability.type.AbilityTrap;
 import kamkeel.npcs.controllers.data.ability.type.AbilityVortex;
+import kamkeel.npcs.network.enums.SyncType;
 import kamkeel.npcs.controllers.data.ability.type.energy.AbilityBeam;
 import kamkeel.npcs.controllers.data.ability.type.energy.AbilityDisc;
 import kamkeel.npcs.controllers.data.ability.type.energy.AbilityDome;
@@ -44,7 +45,10 @@ import net.minecraftforge.common.util.Constants;
 import noppes.npcs.controllers.data.AbilityScript;
 import noppes.npcs.controllers.data.ChainedAbilityScript;
 import net.minecraft.entity.EntityLivingBase;
+import kamkeel.npcs.controllers.sync.handlers.PlayerAbilitySyncHelper;
+import kamkeel.npcs.entity.EntityEnergyBarrier;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import noppes.npcs.CustomNpcs;
 import noppes.npcs.LogWriter;
@@ -393,7 +397,7 @@ public class AbilityController implements IAbilityHandler {
             customAbilitiesById.put(uuid, ability);
             customAbilityRevision++;
             LogWriter.script("Saved custom ability: " + name + " [" + uuid + "]");
-            SyncController.syncAllCustomAbilities();
+            SyncController.syncAll(SyncType.CUSTOM_ABILITY);
             return true;
         } catch (Exception e) {
             LogWriter.error("Error saving custom ability: " + name, e);
@@ -469,8 +473,24 @@ public class AbilityController implements IAbilityHandler {
                         pData.abilityData.lockAbility(name);
                         changed = true;
                     }
+
+                    // An active toggle holds the resolved Ability directly and keeps ticking it,
+                    // so drop it without firing onToggle against an unregistered ability.
+                    if (uuid != null && !uuid.isEmpty()) {
+                        pData.abilityData.setToggleEntryDirect(uuid, 0);
+                    }
+                    pData.abilityData.setToggleEntryDirect(name, 0);
+
+                    if (pData.hotbarData != null) {
+                        pData.hotbarData.validateSlots();
+                    }
+
                     if (changed) {
                         pData.save();
+                    }
+
+                    if (pData.player instanceof EntityPlayerMP) {
+                        PlayerAbilitySyncHelper.syncAbilities((EntityPlayerMP) pData.player);
                     }
                 }
             }
@@ -478,7 +498,7 @@ public class AbilityController implements IAbilityHandler {
 
         customAbilityRevision++;
         LogWriter.script("Deleted custom ability: " + name);
-        SyncController.syncAllCustomAbilities();
+        SyncController.syncAll(SyncType.CUSTOM_ABILITY);
         return true;
     }
 
@@ -765,7 +785,7 @@ public class AbilityController implements IAbilityHandler {
             chainedAbilitiesById.put(uuid, chain);
             chainedAbilityRevision++;
             LogWriter.script("Saved chained ability: " + name + " [" + uuid + "]");
-            SyncController.syncAllChainedAbilities();
+            SyncController.syncAll(SyncType.CHAINED_ABILITY);
             return true;
         } catch (Exception e) {
             LogWriter.error("Error saving chained ability: " + name, e);
@@ -845,7 +865,7 @@ public class AbilityController implements IAbilityHandler {
 
         chainedAbilityRevision++;
         LogWriter.script("Deleted chained ability: " + name);
-        SyncController.syncAllChainedAbilities();
+        SyncController.syncAll(SyncType.CHAINED_ABILITY);
         return true;
     }
 
@@ -1360,6 +1380,17 @@ public class AbilityController implements IAbilityHandler {
             health = ext.modifyBarrierHealth(ability, caster, health);
         }
         return health;
+    }
+
+    /**
+     * Fire modifyBarrierMeleeDamage on all extenders. Cumulative — each extender's output feeds the next.
+     */
+    public float fireModifyBarrierMeleeDamage(EntityEnergyBarrier barrier, EntityLivingBase attacker, float baseDamage) {
+        float damage = baseDamage;
+        for (IAbilityExtender ext : extenders) {
+            damage = ext.modifyBarrierMeleeDamage(barrier, attacker, damage);
+        }
+        return damage;
     }
 
     /**

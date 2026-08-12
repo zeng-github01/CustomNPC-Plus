@@ -1,9 +1,9 @@
 package noppes.npcs;
 
-import net.minecraft.nbt.*;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
-import noppes.npcs.constants.EnumPotionType;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagInt;
+import net.minecraft.nbt.NBTTagList;
 import noppes.npcs.controllers.data.Line;
 import noppes.npcs.controllers.data.Lines;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -11,7 +11,6 @@ import noppes.npcs.entity.data.ModelRotate;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
 public class VersionCompatibility {
     public static int ModRev = 23;
@@ -23,6 +22,16 @@ public class VersionCompatibility {
             if (compound.hasKey("AimWhileShooting")) {
                 boolean aimShot = compound.getBoolean("AimWhileShooting");
                 compound.setInteger("AimType", !aimShot ? 0 : 1);
+            }
+
+            // Fire projectiles used to ignite unconditionally. The ignite check now also requires
+            // pBurnItem, which reads false when the key is absent, so restore it for anything
+            // saved before the flag existed. Shipped alongside revision 23, so anything already
+            // at 23 was written by a build that had the flag.
+            if (compound.hasKey("pEffect") && !compound.hasKey("pBurnItem")) {
+                if (EnumPotionType.fromOrdinal(compound.getInteger("pEffect")) == EnumPotionType.Fire) {
+                    compound.setBoolean("pBurnItem", true);
+                }
             }
         }
         if (npc.npcVersion < 22) {

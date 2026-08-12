@@ -1,7 +1,7 @@
 package noppes.npcs.controllers.data;
 
 import kamkeel.npcs.controllers.AbilityController;
-import kamkeel.npcs.controllers.SyncController;
+import kamkeel.npcs.controllers.sync.handlers.PlayerAbilitySyncHelper;
 import kamkeel.npcs.controllers.data.ability.Ability;
 import kamkeel.npcs.controllers.data.ability.enums.AbilityPhase;
 import kamkeel.npcs.controllers.data.ability.data.ChainedAbility;
@@ -496,23 +496,23 @@ public class PlayerAbilityData extends AbstractDataAbilities implements IPlayerA
 
     /**
      * Full sync of all ability state to the client.
-     * Delegates to {@link SyncController#syncAbilities(EntityPlayerMP)}.
+     * Delegates to {@link PlayerAbilitySyncHelper#syncAbilities(EntityPlayerMP)}.
      */
     public void syncToClient() {
         EntityPlayer player = playerData.player;
         if (player instanceof EntityPlayerMP) {
-            SyncController.syncAbilities((EntityPlayerMP) player);
+            PlayerAbilitySyncHelper.syncAbilities((EntityPlayerMP) player);
         }
     }
 
     /**
      * Lightweight sync of cooldown state only to the client.
-     * Delegates to {@link SyncController#syncAbilityCooldowns(EntityPlayerMP)}.
+     * Delegates to {@link PlayerAbilitySyncHelper#syncAbilityCooldowns(EntityPlayerMP)}.
      */
     public void syncCooldownToClient() {
         EntityPlayer player = playerData.player;
         if (player instanceof EntityPlayerMP) {
-            SyncController.syncAbilityCooldowns((EntityPlayerMP) player);
+            PlayerAbilitySyncHelper.syncAbilityCooldowns((EntityPlayerMP) player);
         }
     }
 
@@ -773,21 +773,21 @@ public class PlayerAbilityData extends AbstractDataAbilities implements IPlayerA
     }
 
     /**
-     * Fully reset ability state when changing dimensions.
-     * Clears cooldowns so the player can immediately use abilities in the new dimension.
+     * Fully reset transient ability execution state when changing dimensions.
+     * Cooldowns are preserved so dimension changes cannot bypass them.
      * Keeps active toggles (dimension change shouldn't reset ongoing effects).
      */
     public void resetOnDimensionChange() {
         trackingAbilityPosition = false;
-        onEntityReconstructed(true, false);
+        onEntityReconstructed(false, false);
     }
 
     /**
      * Reset ability state when a large-distance teleport is detected during execution.
-     * Same behavior as dimension change — silent cleanup, clear cooldowns, keep toggles.
+     * Same behavior as dimension change: silent cleanup, preserve cooldowns, keep toggles.
      */
     public void resetOnTeleport() {
-        onEntityReconstructed(true, false);
+        onEntityReconstructed(false, false);
     }
 
     /**
@@ -832,9 +832,8 @@ public class PlayerAbilityData extends AbstractDataAbilities implements IPlayerA
         currentTarget = null;
         lastAbilityActivationTime = -1;
 
-        // Clear cooldowns (fresh start after relog)
-        cooldownEndTime = 0;
-        resetAllPerAbilityCooldowns();
+        // Cooldowns are absolute world-time deadlines and are restored from NBT, so relogging
+        // must not clear them or it becomes a way to bypass them.
         interruptCooldownRolled = false;
 
         // Reset sync tracking so next sync sends fresh state
@@ -852,9 +851,10 @@ public class PlayerAbilityData extends AbstractDataAbilities implements IPlayerA
         if (currentAbility != null && currentAbility.isExecuting()) {
             interruptCurrentAbility(null, 0);
         }
-        // Clear any remaining transient state (cooldowns, chains, locks)
+        // Clear any remaining transient state (chains, locks)
         // Don't clear toggles — they were already saved to NBT by this point
-        onEntityReconstructed(true, false);
+        // Don't clear cooldowns — they persist across sessions
+        onEntityReconstructed(false, false);
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -1048,6 +1048,22 @@ public class PlayerAbilityData extends AbstractDataAbilities implements IPlayerA
             toggleList.appendTag(toggleNbt);
         }
         compound.setTag("ActiveToggles", toggleList);
+
+        // Cooldowns are absolute world-time deadlines, so they stay meaningful across sessions
+        NBTTagCompound cooldowns = new NBTTagCompound();
+        cooldowns.setLong("GlobalEnd", cooldownEndTime);
+        cooldowns.setInteger("GlobalDuration", globalCooldownDuration);
+        NBTTagList perAbilityList = new NBTTagList();
+        for (Map.Entry<String, Long> entry : perAbilityCooldownEndTimes.entrySet()) {
+            NBTTagCompound cooldownNbt = new NBTTagCompound();
+            cooldownNbt.setString("Key", entry.getKey());
+            cooldownNbt.setLong("End", entry.getValue());
+            Integer duration = perAbilityCooldownDurations.get(entry.getKey());
+            cooldownNbt.setInteger("Duration", duration == null ? 0 : duration);
+            perAbilityList.appendTag(cooldownNbt);
+        }
+        cooldowns.setTag("PerAbility", perAbilityList);
+        compound.setTag("AbilityCooldowns", cooldowns);
     }
 
     public void readFromNBT(NBTTagCompound compound) {
@@ -1080,6 +1096,24 @@ public class PlayerAbilityData extends AbstractDataAbilities implements IPlayerA
                 String key = entry.getString("Key");
                 int state = entry.hasKey("State") ? entry.getInteger("State") : 1;
                 setToggleEntryDirect(key, state);
+            }
+        }
+
+        if (compound.hasKey("AbilityCooldowns")) {
+            cooldownEndTime = 0;
+            globalCooldownDuration = 0;
+            resetAllPerAbilityCooldowns();
+
+            NBTTagCompound cooldowns = compound.getCompoundTag("AbilityCooldowns");
+            cooldownEndTime = cooldowns.getLong("GlobalEnd");
+            globalCooldownDuration = cooldowns.getInteger("GlobalDuration");
+            NBTTagList perAbilityList = cooldowns.getTagList("PerAbility", 10); // 10 = TAG_COMPOUND
+            for (int i = 0; i < perAbilityList.tagCount(); i++) {
+                NBTTagCompound entry = perAbilityList.getCompoundTagAt(i);
+                String key = entry.getString("Key");
+                if (key == null || key.isEmpty()) continue;
+                perAbilityCooldownEndTimes.put(key, entry.getLong("End"));
+                perAbilityCooldownDurations.put(key, entry.getInteger("Duration"));
             }
         }
     }

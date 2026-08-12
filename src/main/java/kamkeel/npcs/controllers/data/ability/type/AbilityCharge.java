@@ -43,7 +43,7 @@ public class AbilityCharge extends AbilityMovement implements IAbilityCharge {
         this.targetingMode = TargetingMode.AGGRO_TARGET;
         this.maxRange = 20.0f;
         this.minRange = 4.0f;
-        this.lockMovement = LockMode.WINDUP;
+        this.lockMovement = LockMode.WINDUP_AND_ACTIVE;
         this.cooldownTicks = 0;
         this.windUpTicks = 20;
         // LINE telegraph showing charge path
@@ -56,6 +56,11 @@ public class AbilityCharge extends AbilityMovement implements IAbilityCharge {
         this.defaultIconLayers = new DefaultIconLayer[]{
             new DefaultIconLayer("customnpcs:textures/gui/ability/charge.png")
         };
+    }
+
+    @Override
+    public boolean hasAbilityMovement() {
+        return true; // This ability drives the NPC's motion itself
     }
 
     @Override

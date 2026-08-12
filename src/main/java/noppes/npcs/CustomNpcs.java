@@ -317,6 +317,9 @@ public class CustomNpcs {
         new AddonManager();
         new AttributeController();
         new MagicController();
+        
+        SyncController.register();
+
 
         APIRegistry.Instance.register("CNPC+ API", "https://kamkeel.github.io/CustomNPC-Plus/");
     }
@@ -340,6 +343,10 @@ public class CustomNpcs {
 
     @EventHandler
     public void loadComplete(FMLLoadCompleteEvent ev) {
+        // Runs after every other mod has loaded. Kept on the proxy: the client side registers
+        // inventory tabs, and naming those types here would drag client-only GUI classes into
+        // a class the server loads.
+        proxy.loadComplete();
         proxy.buildPackageIndex();
 
         // Load built-in animations on the client so they're available for ability preview.

@@ -300,14 +300,7 @@ public class AbilityTrap extends AbilityZone implements IAbilityTrap {
     @SideOnly(Side.CLIENT)
     @Override
     protected void addPresetFieldDef(List<FieldDef> defs) {
-        defs.add(FieldDef.subGuiField("gui.applyPreset",
-            SubGuiTrapPresetSelector::new,
-            gui -> {
-                SubGuiTrapPresetSelector selector = (SubGuiTrapPresetSelector) gui;
-                if (selector.selectedPreset != null) {
-                    applyTrapPresetDefaults(selector.selectedPreset);
-                }
-            }));
+        defs.add(SubGuiTrapPresetSelector.createPresetField(this::applyTrapPresetDefaults));
     }
 
     @SideOnly(Side.CLIENT)

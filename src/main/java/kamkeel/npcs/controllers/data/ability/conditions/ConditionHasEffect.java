@@ -34,27 +34,15 @@ public class ConditionHasEffect extends AbilityCondition {
         return CustomEffectController.getInstance().hasEffect(player, effectId, effectIndex);
     }
 
+    public void setEffect(int effectId, int effectIndex) {
+        this.effectId = effectId;
+        this.effectIndex = effectIndex;
+    }
+
     @SideOnly(Side.CLIENT)
     @Override
     public void getConditionDefinitions(List<FieldDef> defs) {
-        defs.add(FieldDef.subGuiField("condition.select_effect",
-            () -> new SubGuiCustomEffectSelect(effectId, effectIndex),
-            gui -> {
-                SubGuiCustomEffectSelect sel = (SubGuiCustomEffectSelect) gui;
-                if (sel.getSelectedEffectId() >= 0) {
-                    effectId = sel.getSelectedEffectId();
-                    effectIndex = sel.getSelectedIndex();
-                }
-            })
-            .buttonLabel(() -> {
-                if (effectId < 0) return "None";
-                CustomEffect effect = getEffect();
-                return effect != null ? effect.getName() : "ID:" + effectId;
-            })
-            .clearable(() -> {
-                effectId = -1;
-                effectIndex = 0;
-            }));
+        defs.add(SubGuiCustomEffectSelect.createSelectField(this));
     }
 
     @SideOnly(Side.CLIENT)
@@ -74,7 +62,7 @@ public class ConditionHasEffect extends AbilityCondition {
         return effectId >= 0;
     }
 
-    private CustomEffect getEffect() {
+    public CustomEffect getEffect() {
         HashMap<Integer, CustomEffect> map = CustomEffectController.getInstance().getEffectMap(effectIndex);
         return map != null ? map.get(effectId) : null;
     }

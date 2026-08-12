@@ -2,6 +2,7 @@ package kamkeel.npcs.command;
 
 import kamkeel.npcs.controllers.ProfileController;
 import kamkeel.npcs.controllers.SyncController;
+import kamkeel.npcs.network.enums.SyncType;
 import kamkeel.npcs.network.packets.data.AchievementPacket;
 import kamkeel.npcs.network.packets.data.ChatAlertPacket;
 import net.minecraft.command.CommandException;
@@ -393,7 +394,7 @@ public class QuestCommand extends CommandKamkeelBase {
     )
     public void reload(ICommandSender sender, String args[]) {
         new QuestController().load();
-        SyncController.syncAllQuests();
+        SyncController.syncAll(SyncType.QUEST_CATEGORY);
         sendResult(sender, "Quests Reloaded");
     }
 }

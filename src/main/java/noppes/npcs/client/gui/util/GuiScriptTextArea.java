@@ -624,9 +624,11 @@ public class GuiScriptTextArea extends GuiNpcTextField {
         int maxScroll = Math.max(0, getPaddedLineCount() - container.visibleLines);
 
         // Handle mouse wheel scroll
-        int wheelDelta = ((GuiNPCInterface) listener).mouseScroll = Mouse.getDWheel();
+        // Take whatever the parent screen has left for this frame rather than polling the wheel
+        // again - the poll is destructive and the parent has already drained it.
+        int wheelDelta = listener instanceof GuiNPCInterface ? ((GuiNPCInterface) listener).mouseScroll : Mouse.getDWheel();
         if (listener instanceof GuiNPCInterface) {
-            ((GuiNPCInterface) listener).mouseScroll = wheelDelta;
+            ((GuiNPCInterface) listener).mouseScroll = 0;
 
             // Intercept wheel scroll for tooltip (highest priority)
             // Only consume the wheel event when the tooltip actually has content to scroll;

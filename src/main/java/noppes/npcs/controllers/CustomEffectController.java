@@ -1,7 +1,7 @@
 package noppes.npcs.controllers;
 
 import kamkeel.npcs.controllers.SyncController;
-import kamkeel.npcs.network.enums.EnumSyncType;
+import kamkeel.npcs.network.enums.SyncType;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
@@ -128,7 +128,7 @@ public class CustomEffectController implements ICustomEffectHandler {
                     file.delete();
                 }
                 categoryManager.removeItem(id);
-                SyncController.syncRemove(EnumSyncType.CUSTOM_EFFECTS, foundEffect.getID());
+                SyncController.syncRemove(SyncType.CUSTOM_EFFECTS, foundEffect.getID());
                 saveEffectLoadMap();
             }
         }
@@ -700,7 +700,7 @@ public class CustomEffectController implements ICustomEffectHandler {
                 file2.delete();
             file.renameTo(file2);
             nbtTagCompound.removeTag("ScriptData");
-            SyncController.syncUpdate(EnumSyncType.CUSTOM_EFFECTS, -1, nbtTagCompound);
+            SyncController.syncUpdate(SyncType.CUSTOM_EFFECTS, -1, nbtTagCompound);
         } catch (Exception e) {
             LogWriter.except(e);
         }

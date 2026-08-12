@@ -40,6 +40,7 @@ public class QuestTrackingComponent extends HudComponent {
         if (turnIn != null && !turnIn.isEmpty()) {
             turnInLines.add(convertColorCodes(turnIn));
         }
+        updateOverlayHeight();
     }
 
     /**
@@ -240,6 +241,19 @@ public class QuestTrackingComponent extends HudComponent {
     }
 
     // ---------- Helper rendering methods ----------- (methods unchanged) ...
+    private void updateOverlayHeight() {
+        int lineHeight = mc.fontRenderer.FONT_HEIGHT + 4;
+        int contentHeight = 5;
+        contentHeight += questTitleLines.size() * lineHeight + 8;
+        contentHeight += questCategoryLines.size() * lineHeight + 8;
+        contentHeight += objectiveLines.size() * lineHeight;
+        if (!turnInLines.isEmpty()) {
+            contentHeight += 8;
+        }
+        contentHeight += turnInLines.size() * lineHeight;
+        overlayHeight = contentHeight;
+    }
+
     private int renderTextBlock(List<String> lines, int startY, int align, int color) {
         int y = startY;
         FontRenderer font = mc.fontRenderer;

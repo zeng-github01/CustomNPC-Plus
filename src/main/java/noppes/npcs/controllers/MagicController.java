@@ -1,7 +1,7 @@
 package noppes.npcs.controllers;
 
 import kamkeel.npcs.controllers.SyncController;
-import kamkeel.npcs.network.enums.EnumSyncType;
+import kamkeel.npcs.network.enums.SyncType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
@@ -275,7 +275,7 @@ public class MagicController implements IMagicHandler {
 
         NBTTagCompound magicCompound = new NBTTagCompound();
         mag.writeNBT(magicCompound);
-        SyncController.syncUpdate(EnumSyncType.MAGIC, -1, magicCompound);
+        SyncController.syncUpdate(SyncType.MAGIC, -1, magicCompound);
 
         saveMagicData();
     }
@@ -283,7 +283,7 @@ public class MagicController implements IMagicHandler {
     public void removeMagic(int magicID) {
         if (magics.containsKey(magicID)) {
             magics.remove(magicID);
-            SyncController.syncRemove(EnumSyncType.MAGIC, magicID);
+            SyncController.syncRemove(SyncType.MAGIC, magicID);
             saveMagicData();
         }
     }
@@ -345,7 +345,7 @@ public class MagicController implements IMagicHandler {
 
         NBTTagCompound cycleCompound = new NBTTagCompound();
         cycle.writeNBT(cycleCompound);
-        SyncController.syncUpdate(EnumSyncType.MAGIC_CYCLE, -1, cycleCompound);
+        SyncController.syncUpdate(SyncType.MAGIC_CYCLE, -1, cycleCompound);
 
         saveMagicData();
     }
@@ -353,7 +353,7 @@ public class MagicController implements IMagicHandler {
     public void removeCycle(int categoryId) {
         if (cycles.containsKey(categoryId)) {
             cycles.remove(categoryId);
-            SyncController.syncRemove(EnumSyncType.MAGIC_CYCLE, categoryId);
+            SyncController.syncRemove(SyncType.MAGIC_CYCLE, categoryId);
             saveMagicData();
         }
     }

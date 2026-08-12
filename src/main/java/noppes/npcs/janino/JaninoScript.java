@@ -544,15 +544,13 @@ public abstract class JaninoScript<T> implements IScriptUnit {
     }
 
     public static <T, S extends JaninoScript<T>> S readFromNBT(NBTTagCompound compound, S script, Supplier<S> factory) {
-        if (compound.hasKey("Script")) {
-            if (script == null) script = factory.get();
-            script.readFromNBT(compound.getCompoundTag("Script"));
-        }
+        if (script == null) script = factory.get();
+        script.readFromNBT(compound);
         return script;
     }
 
     public static <T> NBTTagCompound writeToNBT(NBTTagCompound compound, JaninoScript<T> script) {
-        if (script != null) compound.setTag("Script", script.writeToNBT(new NBTTagCompound()));
+        if (script != null) script.writeToNBT(compound);
         return compound;
     }
 }

@@ -1,7 +1,7 @@
 package noppes.npcs.controllers;
 
 import kamkeel.npcs.controllers.SyncController;
-import kamkeel.npcs.network.enums.EnumSyncType;
+import kamkeel.npcs.network.enums.SyncType;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -159,7 +159,7 @@ public class FactionController implements IFactionHandler {
 
         NBTTagCompound facCompound = new NBTTagCompound();
         faction.writeNBT(facCompound);
-        SyncController.syncUpdate(EnumSyncType.FACTION, -1, facCompound);
+        SyncController.syncUpdate(SyncType.FACTION, -1, facCompound);
         saveFactions();
     }
 
@@ -195,7 +195,7 @@ public class FactionController implements IFactionHandler {
             } else {
                 this.saveFactions();
                 faction.id = -1;
-                SyncController.syncRemove(EnumSyncType.FACTION, id);
+                SyncController.syncRemove(SyncType.FACTION, id);
                 return faction;
             }
         } else {

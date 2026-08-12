@@ -10,7 +10,10 @@ public class EntityAITransform extends EntityAIBase {
 
     public EntityAITransform(EntityNPCInterface npc) {
         this.npc = npc;
-        setMutexBits(AiMutex.PASSIVE);
+        // No mutex: this only polls the world time and flips the transform, it drives nothing.
+        // Claiming PASSIVE let any running movement or look task starve it, so the day/night
+        // swap only fired in the gaps where those yielded - such as while saying a line.
+        setMutexBits(0);
     }
 
     @Override

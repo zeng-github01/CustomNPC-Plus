@@ -50,10 +50,9 @@ public final class AbilityHotbarSelectPacket extends AbstractPacket {
             // Deselect
             data.abilityData.setSelectedIndex(-1);
         } else {
-            int index = data.abilityData.getUnlockedAbilityList().indexOf(key);
-            if (index >= 0) {
-                data.abilityData.setSelectedIndex(index);
-            }
+            // A key the player no longer has deselects rather than leaving the previous
+            // selection in place, which would fire a different ability than the one shown.
+            data.abilityData.setSelectedIndex(data.abilityData.getUnlockedAbilityList().indexOf(key));
         }
         data.save();
     }

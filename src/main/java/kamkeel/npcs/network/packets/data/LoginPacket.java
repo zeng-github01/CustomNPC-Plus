@@ -8,7 +8,7 @@ import kamkeel.npcs.network.PacketChannel;
 import kamkeel.npcs.network.PacketClient;
 import kamkeel.npcs.network.PacketHandler;
 import kamkeel.npcs.network.enums.EnumDataPacket;
-import kamkeel.npcs.network.enums.EnumSyncType;
+import kamkeel.npcs.network.enums.SyncType;
 import kamkeel.npcs.network.packets.player.SyncRevisionInfoPacket;
 import kamkeel.npcs.util.ByteBufUtils;
 import net.minecraft.entity.player.EntityPlayer;
@@ -21,19 +21,20 @@ import noppes.npcs.controllers.AuctionConfigSync;
 import noppes.npcs.controllers.ScriptConfigSync;
 
 import java.io.IOException;
-import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public final class LoginPacket extends AbstractPacket {
     public static final String packetName = "CNPC+|Login";
 
     private String serverCacheKey = "";
-    private final EnumMap<EnumSyncType, Integer> revisionSnapshot = new EnumMap<>(EnumSyncType.class);
+    private final Map<SyncType, Integer> revisionSnapshot = new LinkedHashMap<>();
 
     public LoginPacket() {
     }
 
-    public LoginPacket(String serverCacheKey, EnumMap<EnumSyncType, Integer> revisionSnapshot) {
+    public LoginPacket(String serverCacheKey, Map<SyncType, Integer> revisionSnapshot) {
         if (serverCacheKey != null) {
             this.serverCacheKey = serverCacheKey;
         }
@@ -58,17 +59,15 @@ public final class LoginPacket extends AbstractPacket {
         out.writeBoolean(ConfigMain.ProfilesEnabled);
         ByteBufUtils.writeString(out, serverCacheKey);
         out.writeShort(revisionSnapshot.size());
-        for (Map.Entry<EnumSyncType, Integer> entry : revisionSnapshot.entrySet()) {
+        for (Map.Entry<SyncType, Integer> entry : revisionSnapshot.entrySet()) {
             out.writeInt(entry.getKey().ordinal());
             out.writeInt(entry.getValue());
         }
 
-        // Send auction config (server-side sync)
         NBTTagCompound auctionConfig = new NBTTagCompound();
         AuctionConfigSync.writeToNBT(auctionConfig);
         ByteBufUtils.writeNBT(out, auctionConfig);
 
-        // Send script config (server-side sync)
         NBTTagCompound scriptConfig = new NBTTagCompound();
         ScriptConfigSync.writeToNBT(scriptConfig);
         ByteBufUtils.writeNBT(out, scriptConfig);
@@ -82,20 +81,20 @@ public final class LoginPacket extends AbstractPacket {
 
         String serverKey = ByteBufUtils.readString(in);
         int revisionCount = in.readUnsignedShort();
-        EnumMap<EnumSyncType, Integer> serverRevisions = new EnumMap<>(EnumSyncType.class);
+        Map<SyncType, Integer> serverRevisions = new LinkedHashMap<>();
         for (int i = 0; i < revisionCount; i++) {
-            EnumSyncType type = EnumSyncType.values()[in.readInt()];
+            SyncType type = SyncType.byOrdinal(in.readInt());
             int revision = in.readInt();
-            serverRevisions.put(type, revision);
+            if (type != null) {
+                serverRevisions.put(type, revision);
+            }
         }
 
         ClientCacheHandler.setActiveServer(serverKey, serverRevisions);
 
-        // Read auction config
         NBTTagCompound auctionConfig = ByteBufUtils.readNBT(in);
         AuctionClientConfig.readFromNBT(auctionConfig);
 
-        // Read script config
         NBTTagCompound scriptConfig = ByteBufUtils.readNBT(in);
         ScriptClientConfig.readFromNBT(scriptConfig);
 

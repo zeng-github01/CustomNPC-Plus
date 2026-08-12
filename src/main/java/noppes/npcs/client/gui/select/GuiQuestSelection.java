@@ -2,6 +2,8 @@ package noppes.npcs.client.gui.select;
 
 import com.google.common.collect.Lists;
 import net.minecraft.client.gui.GuiButton;
+import kamkeel.npcs.controllers.data.ability.conditions.ConditionQuestCompleted;
+import noppes.npcs.client.gui.builder.FieldDef;
 import noppes.npcs.client.gui.util.GuiCustomScroll;
 import noppes.npcs.client.gui.util.GuiNpcButton;
 import noppes.npcs.client.gui.util.GuiNpcLabel;
@@ -26,6 +28,31 @@ public class GuiQuestSelection extends SubGuiInterface implements ICustomScrollL
 
     private QuestCategory selectedCategory;
     public Quest selectedQuest;
+
+    /**
+     * Builds the condition editor's quest-select field.
+     * <p>
+     * This lives here rather than in ConditionQuestCompleted because the lambdas below carry
+     * this class in their method descriptors. The condition is a both-side class, and @SideOnly
+     * does not strip the synthetic lambda methods it generates - so anything reflecting over its
+     * declared methods on a server would resolve those descriptors and fail to find this type.
+     */
+    public static FieldDef createConditionField(ConditionQuestCompleted condition) {
+        return FieldDef.subGuiField("condition.select_quest",
+                () -> new GuiQuestSelection(condition.getQuestId()),
+                gui -> {
+                    GuiQuestSelection sel = (GuiQuestSelection) gui;
+                    if (sel.selectedQuest != null) {
+                        condition.setQuestId(sel.selectedQuest.id);
+                    }
+                })
+            .buttonLabel(() -> {
+                if (condition.getQuestId() < 0) return "None";
+                Quest q = QuestController.Instance.quests.get(condition.getQuestId());
+                return q != null ? q.title : "ID:" + condition.getQuestId();
+            })
+            .clearable(() -> condition.setQuestId(-1));
+    }
 
     private GuiSelectionListener listener;
     private String catSearch = "";

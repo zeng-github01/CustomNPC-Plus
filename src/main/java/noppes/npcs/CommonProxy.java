@@ -225,6 +225,14 @@ public class CommonProxy implements IGuiHandler {
     public void buildPackageIndex() {
     }
 
+    /**
+     * Called from the mod's FMLLoadCompleteEvent, after every other mod has finished loading.
+     * Anything that has to observe another mod's registrations belongs here rather than in
+     * load(), and it stays on the proxy so client-only types never reach the server.
+     */
+    public void loadComplete() {
+    }
+
     public boolean isScriptingEnabled() {
         return ConfigScript.ScriptingEnabled;
     }

@@ -38,20 +38,7 @@ public class ConditionQuestCompleted extends AbilityCondition {
     @SideOnly(Side.CLIENT)
     @Override
     public void getConditionDefinitions(List<FieldDef> defs) {
-        defs.add(FieldDef.subGuiField("condition.select_quest",
-            () -> new GuiQuestSelection(questId),
-            gui -> {
-                GuiQuestSelection sel = (GuiQuestSelection) gui;
-                if (sel.selectedQuest != null) {
-                    questId = sel.selectedQuest.id;
-                }
-            })
-            .buttonLabel(() -> {
-                if (questId < 0) return "None";
-                Quest q = QuestController.Instance.quests.get(questId);
-                return q != null ? q.title : "ID:" + questId;
-            })
-            .clearable(() -> questId = -1));
+        defs.add(GuiQuestSelection.createConditionField(this));
     }
 
     @SideOnly(Side.CLIENT)

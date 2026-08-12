@@ -515,15 +515,28 @@ public abstract class GuiNPCInterface extends GuiScreen {
         }
 
         boolean subGui = hasSubGui();
+
+        // Mouse.getDWheel() clears the accumulated delta, so only the first caller in a frame
+        // ever sees it. Read it once here and let each widget take it in turn; anything that
+        // consumes it zeroes it so later widgets - the script editor, for one - are not left
+        // reading an already-drained wheel.
+        mouseScroll = Mouse.getDWheel();
+
         drawCenteredString(fontRendererObj, title, width / 2, guiTop + 4, 0xffffff);
         for (GuiNpcLabel label : labels.values())
             label.drawLabel(this, fontRendererObj);
         for (GuiCustomScroll scroll : scrolls.values()) {
             scroll.updateSubGUI(subGui);
-            scroll.drawScreen(drawX, drawY, f, !subGui && scroll.isMouseOver(drawX, drawY) ? Mouse.getDWheel() : 0);
+            int delta = !subGui && scroll.isMouseOver(drawX, drawY) ? mouseScroll : 0;
+            if (delta != 0)
+                mouseScroll = 0;
+            scroll.drawScreen(drawX, drawY, f, delta);
         }
         for (GuiScrollWindow guiScrollableComponent : scrollWindows.values()) {
-            guiScrollableComponent.drawScreen(drawX, drawY, f, !subGui && guiScrollableComponent.isMouseOver(drawX, drawY) ? Mouse.getDWheel() : 0);
+            int delta = !subGui && guiScrollableComponent.isMouseOver(drawX, drawY) ? mouseScroll : 0;
+            if (delta != 0)
+                mouseScroll = 0;
+            guiScrollableComponent.drawScreen(drawX, drawY, f, delta);
         }
         for (GuiDiagram diagram : diagrams.values()) {
             diagram.drawDiagram(drawX, drawY, subGui);

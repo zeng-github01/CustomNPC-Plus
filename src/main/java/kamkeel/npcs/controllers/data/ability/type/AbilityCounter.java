@@ -3,14 +3,21 @@ package kamkeel.npcs.controllers.data.ability.type;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import kamkeel.npcs.addon.DBCAddon;
+import noppes.npcs.AbstractDataAbilities;
 import noppes.npcs.controllers.AnimationController;
+import kamkeel.npcs.controllers.data.ability.Ability;
 import kamkeel.npcs.controllers.data.ability.enums.UserType;
 import kamkeel.npcs.controllers.data.ability.gui.AbilityFieldDefs;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.DamageSource;
 import noppes.npcs.controllers.data.Animation;
+import noppes.npcs.controllers.data.PlayerData;
 import noppes.npcs.api.ability.type.IAbilityCounter;
 import noppes.npcs.client.gui.builder.FieldDef;
+import noppes.npcs.entity.EntityNPCInterface;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,6 +31,11 @@ public class AbilityCounter extends AbilityDefend implements IAbilityCounter {
     private float counterValue = 6.0f;
     private int counterAnimationId = -1;
     private String counterAnimationName = "Ability_Guard_Counter";
+
+    // True only while this counter is synchronously dispatching its retaliation damage.
+    // Another counter that is hit by that retaliation inspects this flag on the source
+    // entity's active counter to avoid reacting and creating infinite mutual retaliation.
+    private transient boolean retaliating;
 
     public AbilityCounter() {
         this.typeId = "ability.cnpc.counter";
@@ -61,6 +73,35 @@ public class AbilityCounter extends AbilityDefend implements IAbilityCounter {
     // ═══════════════════════════════════════════════════════════════════
 
     @Override
+    protected boolean isValidDamageSource(DamageSource source) {
+        if (!super.isValidDamageSource(source)) {
+            return false;
+        }
+        // Break counter-vs-counter recursion: if the hit is itself a retaliation
+        // from another counter that is mid-dispatch, don't counter it back.
+        Entity sourceEntity = source.getEntity();
+        AbstractDataAbilities abilities = getAbilitiesOf(sourceEntity);
+        if (abilities != null) {
+            Ability current = abilities.getCurrentAbility();
+            if (current instanceof AbilityCounter && ((AbilityCounter) current).retaliating) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static AbstractDataAbilities getAbilitiesOf(Entity entity) {
+        if (entity instanceof EntityPlayer) {
+            PlayerData pData = PlayerData.get((EntityPlayer) entity);
+            return pData != null ? pData.abilityData : null;
+        }
+        if (entity instanceof EntityNPCInterface) {
+            return ((EntityNPCInterface) entity).abilities;
+        }
+        return null;
+    }
+
+    @Override
     protected float performDefend(EntityLivingBase attacker, float amount) {
         // For PERCENT mode with DBC, use the full DBC-calculated damage, not vanilla base
         float incomingDamage = amount;
@@ -78,11 +119,22 @@ public class AbilityCounter extends AbilityDefend implements IAbilityCounter {
 
         // Counter-attack through the standard ability damage pipeline.
         // DBCAbilityExtender handles DBC stat routing (ignore flags, scaling, etc.) automatically.
-        if (caster != null && attacker.isEntityAlive() && damage > 0) {
-            applyAbilityDamage(caster, attacker, damage, 0);
+        if (caster != null && attacker != null && attacker.isEntityAlive() && damage > 0) {
+            retaliating = true;
+            try {
+                applyAbilityDamage(caster, attacker, damage, 0);
+            } finally {
+                retaliating = false;
+            }
         }
 
         return 0;
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        retaliating = false;
     }
 
     // ═══════════════════════════════════════════════════════════════════

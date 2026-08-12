@@ -56,11 +56,17 @@ public class JaninoScriptHandler<S extends JaninoScript<?>> extends ScriptHandle
     public void readFromNBT(NBTTagCompound compound) {
         // JaninoScriptable's helper generics assume JaninoScript<T>, but most of our scripts are JaninoScript<?>.
         // Keep it simple and safe: treat it as raw.
-        script = (S) JaninoScript.readFromNBT(compound, (JaninoScript) script, (Supplier) factory);
+        NBTTagCompound tag = compound.getCompoundTag("Script");
+        enabled = tag.getBoolean("enabled");
+        script = (S) JaninoScript.readFromNBT(tag, (JaninoScript) script, (Supplier) factory);
     }
 
     public void writeToNBT(NBTTagCompound compound) {
-        JaninoScript.writeToNBT(compound, (JaninoScript) script);
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setBoolean("enabled", enabled);
+        JaninoScript.writeToNBT(tag, (JaninoScript) script);
+        compound.setTag("Script", tag);
+
     }
 
     // -------------------- IScriptHandler --------------------

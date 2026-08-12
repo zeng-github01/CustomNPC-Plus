@@ -4,13 +4,15 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import kamkeel.npcs.controllers.SyncController;
+import kamkeel.npcs.controllers.sync.handlers.CarpentryRecipeSyncHandler;
+import kamkeel.npcs.controllers.sync.handlers.WorkbenchRecipeSyncHandler;
 import kamkeel.npcs.controllers.data.energycharge.EnergyChargeTracker;
 import kamkeel.npcs.entity.EntityEnergyBarrier;
 import kamkeel.npcs.entity.EntityEnergyDome;
 import kamkeel.npcs.network.PacketHandler;
 import kamkeel.npcs.network.enums.EnumSoundOperation;
 import kamkeel.npcs.network.enums.EnumSyncAction;
-import kamkeel.npcs.network.enums.EnumSyncType;
+import kamkeel.npcs.network.enums.SyncType;
 import kamkeel.npcs.network.packets.data.ClonerPacket;
 import kamkeel.npcs.network.packets.data.MarkDataPacket;
 import kamkeel.npcs.network.packets.data.SoundManagementPacket;
@@ -255,20 +257,22 @@ public class ServerEventsHandler {
 
         if (block == Blocks.crafting_table && event.action == Action.RIGHT_CLICK_BLOCK && !player.worldObj.isRemote) {
             PacketHandler.Instance.sendToPlayer(new SyncPacket(
-                EnumSyncType.WORKBENCH_RECIPES,
+                SyncType.WORKBENCH_RECIPES,
                 EnumSyncAction.RELOAD,
                 -1,
-                SyncController.getCurrentRevision(EnumSyncType.WORKBENCH_RECIPES),
-                SyncController.workbenchNBT()
+                null,
+                SyncController.getCurrentServerRevision(SyncType.WORKBENCH_RECIPES),
+                WorkbenchRecipeSyncHandler.getInstance().serializeAll()
             ), (EntityPlayerMP) player);
         }
         if (block == CustomItems.carpentyBench && event.action == Action.RIGHT_CLICK_BLOCK && !player.worldObj.isRemote) {
             PacketHandler.Instance.sendToPlayer(new SyncPacket(
-                EnumSyncType.CARPENTRY_RECIPES,
+                SyncType.CARPENTRY_RECIPES,
                 EnumSyncAction.RELOAD,
                 -1,
-                SyncController.getCurrentRevision(EnumSyncType.CARPENTRY_RECIPES),
-                SyncController.carpentryNBT()
+                null,
+                SyncController.getCurrentServerRevision(SyncType.CARPENTRY_RECIPES),
+                CarpentryRecipeSyncHandler.getInstance().serializeAll()
             ), (EntityPlayerMP) player);
         }
         if ((block == CustomItems.banner || block == CustomItems.wallBanner || block == CustomItems.sign) && event.action == Action.RIGHT_CLICK_BLOCK) {

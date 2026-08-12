@@ -384,14 +384,6 @@ public class ClientProxy extends CommonProxy {
 
         // Lightning effect rendering system
         MinecraftForge.EVENT_BUS.register(new LightningHandler());
-
-        if (ConfigClient.InventoryGuiEnabled) {
-            MinecraftForge.EVENT_BUS.register(new TabRegistry());
-            if (TabRegistry.getTabList().isEmpty()) {
-                TabRegistry.registerTab(new InventoryTabVanilla());
-            }
-            TabRegistry.registerTab(new InventoryTabCustomNpc());
-        }
     }
 
     public FakePlayer getCommandPlayer(IWorld world) {
@@ -860,6 +852,19 @@ public class ClientProxy extends CommonProxy {
     @Override
     public boolean isGUIOpen() {
         return Minecraft.getMinecraft().currentScreen != null;
+    }
+
+    @Override
+    public void loadComplete() {
+        // Deferred from load() so TConstruct has registered its own tabs first - registering
+        // ours before it left the vanilla tab duplicated.
+        if (ConfigClient.InventoryGuiEnabled) {
+            MinecraftForge.EVENT_BUS.register(new TabRegistry());
+            if (TabRegistry.getTabList().isEmpty()) {
+                TabRegistry.registerTab(new InventoryTabVanilla());
+            }
+            TabRegistry.registerTab(new InventoryTabCustomNpc());
+        }
     }
 
     public void buildPackageIndex() {

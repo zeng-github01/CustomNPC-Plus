@@ -9,13 +9,9 @@ import kamkeel.npcs.network.PacketChannel;
 import kamkeel.npcs.network.PacketHandler;
 import kamkeel.npcs.network.enums.EnumDataPacket;
 import kamkeel.npcs.util.ByteBufUtils;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
-import noppes.npcs.client.gui.util.GuiContainerNPCInterface;
-import noppes.npcs.client.gui.util.GuiNPCInterface;
 import noppes.npcs.client.gui.util.IGuiData;
 
 import java.io.IOException;
@@ -59,15 +55,6 @@ public final class GuiDataPacket extends LargeAbstractPacket {
     @SideOnly(Side.CLIENT)
     @Override
     protected void handleCompleteData(ByteBuf data, EntityPlayer player) throws IOException {
-        GuiScreen gui = Minecraft.getMinecraft().currentScreen;
-        if (gui instanceof GuiNPCInterface && ((GuiNPCInterface) gui).hasSubGui()) {
-            gui = ((GuiNPCInterface) gui).getSubGui();
-        } else if (gui instanceof GuiContainerNPCInterface && ((GuiContainerNPCInterface) gui).hasSubGui()) {
-            gui = ((GuiContainerNPCInterface) gui).getSubGui();
-        }
-        if (gui instanceof IGuiData) {
-            NBTTagCompound nbt = ByteBufUtils.readBigNBT(data);
-            ((IGuiData) gui).setGuiData(nbt);
-        }
+        IGuiData.legacySetGuiData(ByteBufUtils.readBigNBT(data));
     }
 }

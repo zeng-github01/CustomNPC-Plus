@@ -73,7 +73,7 @@ public final class CategoryItemsRequestPacket extends AbstractPacket {
 
         // Send tag map for the items
         HashMap<String, HashSet<UUID>> tagMap = getTagMapByCat(type, categoryId);
-        if (tagMap != null && !tagMap.isEmpty()) {
+        if (tagMap != null) {
             TagController.sendCategoryTagMap((EntityPlayerMP) player, tagMap);
         }
     }
