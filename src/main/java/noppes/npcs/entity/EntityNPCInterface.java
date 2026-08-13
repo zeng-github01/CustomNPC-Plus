@@ -1343,8 +1343,11 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
             // npc up onto whatever it now touches. Only the horizontal push is wanted here.
             float prevStepHeight = this.stepHeight;
             this.stepHeight = 0.0F;
-            this.moveEntity(oldWidth - newWidth, 0.0D, oldWidth - newWidth);
-            this.stepHeight = prevStepHeight;
+            try {
+                this.moveEntity(oldWidth - newWidth, 0.0D, oldWidth - newWidth);
+            } finally {
+                this.stepHeight = prevStepHeight;
+            }
         }
     }
 
