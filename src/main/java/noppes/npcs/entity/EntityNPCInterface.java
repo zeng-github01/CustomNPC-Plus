@@ -1338,8 +1338,14 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
         this.height = newHeight;
         this.setPosition(posX, posY, posZ);
 
-        if (newWidth > oldWidth && !this.firstUpdate && !this.worldObj.isRemote)
+        if (newWidth > oldWidth && !this.firstUpdate && !this.worldObj.isRemote) {
+            // Lying and crawling widen the box, and moveEntity would answer that by stepping the
+            // npc up onto whatever it now touches. Only the horizontal push is wanted here.
+            float prevStepHeight = this.stepHeight;
+            this.stepHeight = 0.0F;
             this.moveEntity(oldWidth - newWidth, 0.0D, oldWidth - newWidth);
+            this.stepHeight = prevStepHeight;
+        }
     }
 
     @Override
