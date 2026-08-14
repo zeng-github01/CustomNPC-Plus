@@ -29,14 +29,6 @@ public class GuiQuestSelection extends SubGuiInterface implements ICustomScrollL
     private QuestCategory selectedCategory;
     public Quest selectedQuest;
 
-    /**
-     * Builds the condition editor's quest-select field.
-     * <p>
-     * This lives here rather than in ConditionQuestCompleted because the lambdas below carry
-     * this class in their method descriptors. The condition is a both-side class, and @SideOnly
-     * does not strip the synthetic lambda methods it generates - so anything reflecting over its
-     * declared methods on a server would resolve those descriptors and fail to find this type.
-     */
     public static FieldDef createConditionField(ConditionQuestCompleted condition) {
         return FieldDef.subGuiField("condition.select_quest",
                 () -> new GuiQuestSelection(condition.getQuestId()),

@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.Vector;
 
 public class NoppesUtil {
@@ -51,11 +52,15 @@ public class NoppesUtil {
     }
 
     public static void updateSkinOverlayData(EntityPlayer player, NBTTagCompound compound) {
+        updateSkinOverlayData(player.getUniqueID(), compound);
+    }
+
+    public static void updateSkinOverlayData(UUID playerUUID, NBTTagCompound compound) {
         HashMap<Integer, SkinOverlay> skinOverlays = new HashMap<>();
         HashMap<Integer, SkinOverlay> oldOverlays = new HashMap<>();
         NBTTagList skinOverlayList = compound.getTagList("SkinOverlayData", 10);
-        if (ClientCacheHandler.skinOverlays.containsKey(player.getUniqueID())) {
-            oldOverlays = ClientCacheHandler.skinOverlays.get(player.getUniqueID());
+        if (ClientCacheHandler.skinOverlays.containsKey(playerUUID)) {
+            oldOverlays = ClientCacheHandler.skinOverlays.get(playerUUID);
         }
 
         for (int i = 0; i < skinOverlayList.tagCount(); i++) {
@@ -66,7 +71,7 @@ public class NoppesUtil {
             }
             skinOverlays.put(tagID, overlay);
         }
-        ClientCacheHandler.skinOverlays.put(player.getUniqueID(), skinOverlays);
+        ClientCacheHandler.skinOverlays.put(playerUUID, skinOverlays);
     }
 
     public static void clickSound() {

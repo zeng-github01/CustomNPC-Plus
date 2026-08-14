@@ -788,8 +788,7 @@ public abstract class AbstractDataAbilities {
         // Script may have completed/cancelled the ability during the tick event
         if (currentAbility == null) return;
         if (!currentAbility.isExecuting()) {
-            // tick() itself can end the ability (DAZED -> IDLE). Run its completion here,
-            // otherwise it stays the current ability forever and nothing else can start.
+            // tick() can end the ability (DAZED -> IDLE)
             if (phaseChanged && currentAbility.getPhase() == AbilityPhase.IDLE) {
                 handleAbilityCompletion(target);
             }

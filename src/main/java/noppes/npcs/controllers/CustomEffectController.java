@@ -543,7 +543,9 @@ public class CustomEffectController implements ICustomEffectHandler {
 
     @Override
     public void applyEffect(IPlayer player, ICustomEffect effect, int duration, byte level) {
-        applyEffect(player, effect.getID(), duration, level);
+        if (effect == null)
+            return;
+        applyEffect(player, effect.getID(), duration, level, effect.getIndex());
     }
 
     @Override
@@ -555,14 +557,16 @@ public class CustomEffectController implements ICustomEffectHandler {
 
     @Override
     public void removeEffect(IPlayer player, ICustomEffect effect) {
-        removeEffect((EntityPlayer) player.getMCEntity(), (PlayerEffect) effect, ExpirationType.REMOVED);
+        if (effect == null)
+            return;
+        removeEffect(player, effect.getID(), effect.getIndex());
     }
 
     @Override
     public void clearEffects(IPlayer player) {
         if (player == null || player.getMCEntity() == null)
             return;
-        clearEffects((EntityPlayer) player);
+        clearEffects((EntityPlayer) player.getMCEntity());
     }
 
     @Override

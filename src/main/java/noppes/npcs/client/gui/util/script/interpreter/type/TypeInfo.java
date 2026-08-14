@@ -328,10 +328,6 @@ public class TypeInfo {
         return fromGenericType(type, new HashSet<TypeVariable<?>>());
     }
 
-    /**
-     * @param resolving type variables whose bounds are currently being expanded, so a
-     *                  self-referential bound such as {@code E extends Enum<E>} terminates
-     */
     private static TypeInfo fromGenericType(Type type, Set<TypeVariable<?>> resolving) {
         if (type == null) return null;
 
@@ -383,7 +379,6 @@ public class TypeInfo {
         if (type instanceof TypeVariable<?>) {
             TypeVariable<?> typeVar = (TypeVariable<?>) type;
             String varName = typeVar.getName();
-            // Already expanding this variable - emit it unbounded rather than recursing forever
             if (!resolving.add(typeVar)) {
                 return TypeInfo.typeParameter(varName);
             }

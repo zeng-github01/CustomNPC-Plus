@@ -40,6 +40,15 @@ public abstract class SingleScriptHandler extends ScriptHandler {
         if (!canRunScripts()) {
             return;
         }
+
+        if (ScriptController.Instance.lastLoaded > lastInited) {
+            lastInited = ScriptController.Instance.lastLoaded;
+            container.setErrored(false);
+        }
+
+        if (container.hasErrored() || !container.hasCode())
+            return;
+
         container.run(hookName, event);
     }
 

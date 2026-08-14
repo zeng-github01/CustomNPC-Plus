@@ -127,6 +127,9 @@ public class ConfigMain {
     public static Property HitBoxScaleMaxProperty;
     public static int HitBoxScaleMax = 15;
 
+    public static Property NpcVoidRecoveryProperty;
+    public static boolean NpcVoidRecovery = true;
+
     /**
      * Update Properties
      **/
@@ -183,6 +186,9 @@ public class ConfigMain {
 
             OpsOnlyProperty = config.get(NPC, "Only Ops Edit NPCs", false, "Only ops can create and edit npcs");
             OpsOnly = OpsOnlyProperty.getBoolean(false);
+
+            NpcVoidRecoveryProperty = config.get(NPC, "NPC Void Recovery", true, "Teleport npcs that fall out of the world back to their start position instead of letting them fall forever");
+            NpcVoidRecovery = NpcVoidRecoveryProperty.getBoolean(true);
 
             NpcUseOpCommandsProperty = config.get(NPC, "NPC Use Op Commands", false, "Set to true if you want the dialog command option to be able to use op commands like tp etc");
             NpcUseOpCommands = NpcUseOpCommandsProperty.getBoolean(false);

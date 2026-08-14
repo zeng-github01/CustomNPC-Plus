@@ -27,14 +27,6 @@ import java.util.Map;
 @SideOnly(Side.CLIENT)
 public class SubGuiCustomEffectSelect extends SubGuiInterface implements ICustomScrollListener, ITextfieldListener {
 
-    /**
-     * Builds the condition editor's effect-select field.
-     * <p>
-     * This lives here rather than in ConditionHasEffect because the lambdas below carry this
-     * class in their method descriptors. The condition is a both-side class, and @SideOnly does
-     * not strip the synthetic lambda methods it generates - so anything reflecting over its
-     * declared methods on a server would resolve those descriptors and fail to find this type.
-     */
     public static FieldDef createSelectField(ConditionHasEffect condition) {
         return FieldDef.subGuiField("condition.select_effect",
                 () -> new SubGuiCustomEffectSelect(condition.getEffectId(), condition.getEffectIndex()),

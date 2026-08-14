@@ -1172,8 +1172,6 @@ public abstract class Ability implements IAbility, IAbilityAction {
         this.burstIndex = 0;
         this.burstEntities.clear();
 
-        // Use the effective windup, not the raw field: when the windup is synced to an
-        // animation the raw field is not the duration that actually applies.
         if (getWindUpTicks() <= 0) {
             this.phase = AbilityPhase.ACTIVE;
         } else {

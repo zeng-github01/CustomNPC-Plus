@@ -97,11 +97,6 @@ public class RoleTrader extends RoleInterface {
         readFromNBT(nbttagcompound, true);
     }
 
-    /**
-     * @param loadFromMarket pull the linked market's stored data over the compound just read.
-     *                       False when the compound is an admin edit, which is authoritative and
-     *                       would otherwise be overwritten by the market it is about to be saved to.
-     */
     public void readFromNBT(NBTTagCompound nbttagcompound, boolean loadFromMarket) {
         String oldMarket = marketName;
         marketName = nbttagcompound.getString("TraderMarket");

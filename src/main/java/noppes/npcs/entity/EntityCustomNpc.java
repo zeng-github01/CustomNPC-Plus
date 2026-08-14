@@ -62,7 +62,7 @@ public class EntityCustomNpc extends EntityNPCFlying {
     @Override
     public void updateHitbox() {
         Entity entity = modelData.getEntity(this);
-        if (modelData == null || entity == null) {
+        if (entity == null) {
             baseHeight = 1.9f - modelData.getBodyY() + (modelData.modelScale.head.scaleY - 1) / 2;
             super.updateHitbox();
         } else {
@@ -86,9 +86,7 @@ public class EntityCustomNpc extends EntityNPCFlying {
                 worldObj.MAX_ENTITY_RADIUS = newWidth / 2;
             }
 
-            this.width = newWidth;
-            this.height = newHeight;
-            this.setPosition(posX, posY, posZ);
+            applyHitbox(newWidth, newHeight);
         }
     }
 

@@ -40,7 +40,6 @@ public class BlockCampfire extends BlockLightable {
         ItemStack item = player.inventory.getCurrentItem();
         if (item == null)
             return true;
-        int meta = world.getBlockMetadata(x, y, z);
 
         if ((item.getItem() == Items.flint || item.getItem() == Items.flint_and_steel) && unlitBlock() == this) {
             super.onBlockActivated(world, x, y, z, player, par6, par7, par8, par9);

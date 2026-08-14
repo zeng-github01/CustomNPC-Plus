@@ -13,14 +13,6 @@ public class SubGuiTrapPresetSelector extends SubGuiInterface {
 
     public String selectedPreset = null;
 
-    /**
-     * Builds the trap editor's preset field.
-     * <p>
-     * This lives here rather than in AbilityTrap because the lambda below carries this class in
-     * its method descriptor. AbilityTrap is a both-side class, and @SideOnly does not strip the
-     * synthetic lambda methods it generates - so anything reflecting over its declared methods
-     * on a server would resolve that descriptor and fail to find this client-only type.
-     */
     public static FieldDef createPresetField(java.util.function.Consumer<String> applyPreset) {
         return FieldDef.subGuiField("gui.applyPreset",
             SubGuiTrapPresetSelector::new,

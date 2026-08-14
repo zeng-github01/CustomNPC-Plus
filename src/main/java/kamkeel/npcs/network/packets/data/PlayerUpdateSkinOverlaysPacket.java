@@ -8,24 +8,24 @@ import kamkeel.npcs.network.PacketChannel;
 import kamkeel.npcs.network.PacketHandler;
 import kamkeel.npcs.network.enums.EnumDataPacket;
 import kamkeel.npcs.util.ByteBufUtils;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import noppes.npcs.client.NoppesUtil;
 
 import java.io.IOException;
+import java.util.UUID;
 
 public final class PlayerUpdateSkinOverlaysPacket extends AbstractPacket {
     public static final String packetName = "Data|PlayerUpdateSkinOverlays";
 
-    private String playerName;
+    private String playerUUID;
     private NBTTagCompound compound;
 
     public PlayerUpdateSkinOverlaysPacket() {
     }
 
-    public PlayerUpdateSkinOverlaysPacket(String playerName, NBTTagCompound compound) {
-        this.playerName = playerName;
+    public PlayerUpdateSkinOverlaysPacket(UUID playerUUID, NBTTagCompound compound) {
+        this.playerUUID = playerUUID == null ? "" : playerUUID.toString();
         this.compound = compound;
     }
 
@@ -41,18 +41,21 @@ public final class PlayerUpdateSkinOverlaysPacket extends AbstractPacket {
 
     @Override
     public void sendData(ByteBuf out) throws IOException {
-        ByteBufUtils.writeString(out, this.playerName);
+        ByteBufUtils.writeString(out, this.playerUUID);
         ByteBufUtils.writeNBT(out, this.compound);
     }
 
     @SideOnly(Side.CLIENT)
     @Override
     public void receiveData(ByteBuf in, EntityPlayer player) throws IOException {
-        String playerName = ByteBufUtils.readString(in);
+        String uuid = ByteBufUtils.readString(in);
         NBTTagCompound nbt = ByteBufUtils.readNBT(in);
-        EntityPlayer sendingPlayer = Minecraft.getMinecraft().theWorld.getPlayerEntityByName(playerName);
-        if (sendingPlayer != null) {
-            NoppesUtil.updateSkinOverlayData(sendingPlayer, nbt);
+        if (uuid == null || uuid.isEmpty())
+            return;
+
+        try {
+            NoppesUtil.updateSkinOverlayData(UUID.fromString(uuid), nbt);
+        } catch (IllegalArgumentException ignored) {
         }
     }
 }

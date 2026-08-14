@@ -266,7 +266,7 @@ public class LinkedItem implements ILinkedItem {
     }
 
     public LinkedItem clone() {
-        NBTTagCompound nbt = this.writeToNBT(true);
+        NBTTagCompound nbt = this.writeToNBT(false);
         LinkedItem clone = new LinkedItem(this.name);
         clone.readFromNBT(nbt);
         return clone;

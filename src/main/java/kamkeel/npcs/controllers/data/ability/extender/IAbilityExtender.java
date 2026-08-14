@@ -110,15 +110,7 @@ public interface IAbilityExtender {
     }
 
     /**
-     * Called when a barrier entity takes a melee hit, allowing extenders to scale the damage.
-     * A barrier is a plain Entity, so no LivingHurtEvent fires for it and an extender has no
-     * other opportunity to scale melee against it the way it scales {@link #modifyBarrierHealth}.
-     * Cumulative: all extenders apply in sequence, each receiving the previous output.
-     *
-     * @param barrier    The barrier being hit
-     * @param attacker   The entity dealing the hit
-     * @param baseDamage The damage after the barrier's own melee multiplier
-     * @return The modified damage value
+     * Modify melee damage dealt to a barrier. Cumulative across all extenders.
      */
     default float modifyBarrierMeleeDamage(EntityEnergyBarrier barrier, EntityLivingBase attacker, float baseDamage) {
         return baseDamage;

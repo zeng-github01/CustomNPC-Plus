@@ -39,14 +39,6 @@ public class SubGuiAbilityMagic extends SubGuiInterface implements ICustomScroll
 
     private GuiNpcTextField splitField;
 
-    /**
-     * Builds the ability editor's magic field.
-     * <p>
-     * This lives here rather than in Ability because the lambdas below carry this class in
-     * their method descriptors. Ability is a both-side class, and anything reflecting over its
-     * declared methods on a server - Nashorn's adapter generator, for one - would resolve those
-     * descriptors and fail to find this client-only type.
-     */
     public static FieldDef createMagicField(MagicData magicData) {
         return FieldDef.subGuiField("ability.magic.editor",
                 () -> new SubGuiAbilityMagic(magicData.copy()),

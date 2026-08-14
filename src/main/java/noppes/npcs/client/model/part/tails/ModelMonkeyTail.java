@@ -34,8 +34,6 @@ public class ModelMonkeyTail extends ModelRenderer {
 
     public ModelMonkeyTail(ModelBiped base) {
         super(base);
-        // Cancels ModelTail's rotationPointY of 11 so the boxes land where JBRA puts them
-        // on players: plain tail at 10, wrapped tail at 0.
         float heightFactor = -11.0f;
 
         (this.monkey_large = new ModelRenderer(base, 38, 54)).addBox(-2.0f, -2.0f, 0.0f, 4, 4, 6);

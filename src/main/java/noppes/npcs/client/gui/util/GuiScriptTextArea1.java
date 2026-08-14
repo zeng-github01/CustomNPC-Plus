@@ -486,8 +486,6 @@ public class GuiScriptTextArea1 extends GuiNpcTextField {
         int maxScroll = Math.max(0, getPaddedLineCount() - container.visibleLines);
 
         // Handle mouse wheel scroll
-        // Take whatever the parent screen has left for this frame rather than polling the wheel
-        // again - the poll is destructive and the parent has already drained it.
         int wheelDelta = listener instanceof GuiNPCInterface ? ((GuiNPCInterface) listener).mouseScroll : Mouse.getDWheel();
         if (listener instanceof GuiNPCInterface) {
             ((GuiNPCInterface) listener).mouseScroll = 0;

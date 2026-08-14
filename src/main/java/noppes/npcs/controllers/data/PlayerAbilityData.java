@@ -832,8 +832,6 @@ public class PlayerAbilityData extends AbstractDataAbilities implements IPlayerA
         currentTarget = null;
         lastAbilityActivationTime = -1;
 
-        // Cooldowns are absolute world-time deadlines and are restored from NBT, so relogging
-        // must not clear them or it becomes a way to bypass them.
         interruptCooldownRolled = false;
 
         // Reset sync tracking so next sync sends fresh state
@@ -1049,7 +1047,6 @@ public class PlayerAbilityData extends AbstractDataAbilities implements IPlayerA
         }
         compound.setTag("ActiveToggles", toggleList);
 
-        // Cooldowns are absolute world-time deadlines, so they stay meaningful across sessions
         NBTTagCompound cooldowns = new NBTTagCompound();
         cooldowns.setLong("GlobalEnd", cooldownEndTime);
         cooldowns.setInteger("GlobalDuration", globalCooldownDuration);

@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class ScriptEntity<T extends Entity> implements IEntity {
@@ -977,6 +978,14 @@ public class ScriptEntity<T extends Entity> implements IEntity {
 
     public boolean equals(Object object) {
         return object instanceof IEntity && ((IEntity<?>) object).getMCEntity().equals(this.entity);
+    }
+
+    @Override
+    public int hashCode() {
+        // Must key on exactly what equals compares. tempData is mutable and swapped wholesale by
+        // copyTempData, so including it would give two wrappers of the same entity different
+        // hashes - and would change an entry's hash while it sat in a map.
+        return Objects.hashCode(entity);
     }
 
     public void updateEntity() {

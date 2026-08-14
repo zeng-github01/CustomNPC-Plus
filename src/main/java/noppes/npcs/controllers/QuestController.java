@@ -78,14 +78,9 @@ public class QuestController implements IQuestHandler {
                         lastUsedQuestID = id;
                     Quest quest = category.quests.get(id);
                     if (quests.containsKey(id)) {
-                        // Quest IDs live in the filename, not inside the JSON body,
-                        // so a simple rename permanently resolves the conflict.
                         File catDir = new File(getDir(), category.title);
 
-                        // Find the next free ID. It has to clear three things: the ids already
-                        // registered globally, the ids this category still holds but has not
-                        // reached yet, and any file already on disk - renameTo overwrites
-                        // silently on POSIX, so landing on an existing file would destroy it.
+                        // Skip ids held globally, by this category, or already on disk
                         int newId = lastUsedQuestID;
                         do {
                             newId++;

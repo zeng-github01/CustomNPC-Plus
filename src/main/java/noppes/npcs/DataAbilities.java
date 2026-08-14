@@ -191,9 +191,7 @@ public class DataAbilities extends AbstractDataAbilities {
         long now = npc.worldObj.getTotalWorldTime();
 
         if (ability.isPerAbilityCooldown() && ability.getCooldownTicks() > 0) {
-            // The ability's own cooldown is tracked against the ability, so the global timer
-            // only paces how often the NPC acts. Folding the ability's cooldown into it as
-            // well would always outlast the per-ability entry and make it unreachable.
+            // Global timer only paces the NPC; the ability tracks its own cooldown
             cooldownEndTime = now + baseCooldown;
             setPerAbilityCooldown(ability.getName(), now + ability.getCooldownTicks(), ability.getCooldownTicks());
         } else {

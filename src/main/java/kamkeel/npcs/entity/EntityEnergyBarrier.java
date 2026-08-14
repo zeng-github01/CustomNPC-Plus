@@ -117,7 +117,6 @@ public abstract class EntityEnergyBarrier extends EntityEnergyAbility {
     protected EnergyBarrierData barrierData = new EnergyBarrierData();
     protected float currentHealth;
     protected int ticksAlive = 0;
-    /** Absolute world time the barrier expires at, so ticks it misses cannot extend it. */
     protected long barrierDeathTime = -1;
 
     // ==================== DATA WATCHER INDICES ====================
@@ -443,9 +442,7 @@ public abstract class EntityEnergyBarrier extends EntityEnergyAbility {
 
         Entity attacker = source.getEntity();
 
-        // A barrier is a plain Entity, so no LivingHurtEvent fires for it and nothing scales the
-        // hit the way it would against a living target - vanilla hands us the bare attackDamage
-        // attribute. Run the scaling here instead, or the barrier only ever takes a point of it.
+        // No LivingHurtEvent fires for a barrier, so scale the hit here.
         if (attacker instanceof EntityLivingBase) {
             damage = AbilityController.Instance.fireModifyBarrierMeleeDamage(this, (EntityLivingBase) attacker, damage);
         }
@@ -526,15 +523,12 @@ public abstract class EntityEnergyBarrier extends EntityEnergyAbility {
                 }
             }
 
-            // Set the deadline on the first tick after charging, so lifetime starts when the
-            // barrier is actually up. Counting elapsed ticks instead would let any tick the
-            // entity misses - chunk unload, for one - extend it past its configured duration.
             if (barrierDeathTime < 0 && !isCharging()) {
                 barrierDeathTime = worldObj.getTotalWorldTime()
                     + (barrierData.useDuration ? barrierData.durationTicks : BARRIER_HARD_LIFETIME_CAP);
             }
 
-            // Duration check, and the hard lifetime cap for barriers with no duration
+            // Duration check
             if (barrierDeathTime >= 0 && worldObj.getTotalWorldTime() >= barrierDeathTime) {
                 onBarrierDestroyed();
                 this.setDead();

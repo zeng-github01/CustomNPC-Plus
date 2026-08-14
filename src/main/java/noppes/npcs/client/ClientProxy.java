@@ -344,7 +344,6 @@ public class ClientProxy extends CommonProxy {
             MinecraftForgeClient.registerItemRenderer(Item.getItemFromBlock(CustomItems.shortLamp), new ItemShortLampRenderer());
             MinecraftForgeClient.registerItemRenderer(Item.getItemFromBlock(CustomItems.tallLamp), new ItemTallLampRenderer());
         }
-        Minecraft mc = Minecraft.getMinecraft();
 
         NPCButton = new KeyBinding("NPC Inventory", Keyboard.KEY_N, "key.categories.customnpc");
         SpecialKey = new KeyBinding("key.customnpcs.special", Keyboard.KEY_GRAVE, "key.categories.customnpc");
@@ -712,9 +711,7 @@ public class ClientProxy extends CommonProxy {
         if (!player.worldObj.isRemote || !(guiscreen instanceof GuiScreen))
             return;
 
-        if (guiscreen != null) {
-            minecraft.displayGuiScreen((GuiScreen) guiscreen);
-        }
+        minecraft.displayGuiScreen((GuiScreen) guiscreen);
     }
 
 
@@ -809,8 +806,7 @@ public class ClientProxy extends CommonProxy {
             if (location == null)
                 return;
             TextureManager texturemanager = Minecraft.getMinecraft().getTextureManager();
-            if (location != null)
-                texturemanager.bindTexture((ResourceLocation) location);
+            texturemanager.bindTexture((ResourceLocation) location);
         } catch (NullPointerException ex) {
 
         } catch (ReportedException ex) {
@@ -856,8 +852,7 @@ public class ClientProxy extends CommonProxy {
 
     @Override
     public void loadComplete() {
-        // Deferred from load() so TConstruct has registered its own tabs first - registering
-        // ours before it left the vanilla tab duplicated.
+        // Deferred from load() so TConstruct registers its tabs first
         if (ConfigClient.InventoryGuiEnabled) {
             MinecraftForge.EVENT_BUS.register(new TabRegistry());
             if (TabRegistry.getTabList().isEmpty()) {

@@ -474,8 +474,6 @@ public class AbilityController implements IAbilityHandler {
                         changed = true;
                     }
 
-                    // An active toggle holds the resolved Ability directly and keeps ticking it,
-                    // so drop it without firing onToggle against an unregistered ability.
                     if (uuid != null && !uuid.isEmpty()) {
                         pData.abilityData.setToggleEntryDirect(uuid, 0);
                     }

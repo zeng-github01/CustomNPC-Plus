@@ -58,11 +58,10 @@ public class CustomNPCsMixinPlugin implements IMixinConfigPlugin {
             mixins.add("MixinItemStack");
         }
 
-        // Server Only Mixins
-        if (!client) {
-            if (ConfigMixin.EntitySpawnFixMixin) {
-                mixins.add("MixinEntityTrackerEntry");
-            }
+        // The integrated server launches on the client side, so gating this on the launch
+        // side would skip the tracker fix in singleplayer and LAN.
+        if (ConfigMixin.EntitySpawnFixMixin) {
+            mixins.add("MixinEntityTrackerEntry");
         }
 
         return mixins;

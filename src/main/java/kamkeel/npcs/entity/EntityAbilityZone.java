@@ -155,7 +155,6 @@ public class EntityAbilityZone extends Entity implements IEntityAdditionalSpawnD
     // HAZARD-SPECIFIC PROPERTIES
     // ═══════════════════════════════════════════════════════════════════
 
-    /** Floor on how often a hazard pulses, so a small interval cannot turn into a per-tick scan. */
     public static final int MIN_DAMAGE_INTERVAL = 5;
 
     private float damagePerSecond = 1.0f;
@@ -520,8 +519,6 @@ public class EntityAbilityZone extends Entity implements IEntityAdditionalSpawnD
             if (!isInZone(entity)) continue;
 
             if (damagePerSecond > 0) {
-                // The configured value is damage per second, so a pulse deals the share of a
-                // second it covers. Applying it whole made the real rate depend on the interval.
                 applyDamage(entity, owner, damagePerSecond * (damageInterval / 20.0f));
             }
 

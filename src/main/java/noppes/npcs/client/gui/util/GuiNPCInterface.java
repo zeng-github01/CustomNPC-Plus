@@ -516,10 +516,7 @@ public abstract class GuiNPCInterface extends GuiScreen {
 
         boolean subGui = hasSubGui();
 
-        // Mouse.getDWheel() clears the accumulated delta, so only the first caller in a frame
-        // ever sees it. Read it once here and let each widget take it in turn; anything that
-        // consumes it zeroes it so later widgets - the script editor, for one - are not left
-        // reading an already-drained wheel.
+        // Read the wheel once; each widget zeroes it when it consumes it
         mouseScroll = Mouse.getDWheel();
 
         drawCenteredString(fontRendererObj, title, width / 2, guiTop + 4, 0xffffff);

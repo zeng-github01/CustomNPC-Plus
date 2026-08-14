@@ -60,7 +60,7 @@ public class DataSkinOverlays implements IOverlayHandler {
             if (parent instanceof PlayerData && ((PlayerData) parent).player != null) {
                 NBTTagCompound compound = this.writeToNBT(new NBTTagCompound());
                 ((PlayerData) parent).player.getEntityData().setTag("SkinOverlayData", compound.getTagList("SkinOverlayData", 10));
-                PacketHandler.Instance.sendToAll(new PlayerUpdateSkinOverlaysPacket(((PlayerData) parent).player.getCommandSenderName(), compound));
+                PacketHandler.Instance.sendToAll(new PlayerUpdateSkinOverlaysPacket(((PlayerData) parent).player.getUniqueID(), compound));
             } else if (parent instanceof EntityNPCInterface) {
                 ((EntityNPCInterface) parent).updateClient = true;
             }

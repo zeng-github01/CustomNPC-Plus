@@ -22,6 +22,9 @@ import noppes.npcs.client.model.ModelNPCMale;
 import noppes.npcs.constants.EnumAnimation;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
+import noppes.npcs.items.ItemClaw;
+import noppes.npcs.items.ItemRotatedShield;
+import noppes.npcs.items.ItemShield;
 import org.lwjgl.opengl.GL11;
 
 import static net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED;

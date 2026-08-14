@@ -249,9 +249,6 @@ public abstract class AbilityEnergyProjectile<E extends EntityEnergyProjectile> 
      */
     protected EntityLivingBase getLaunchTarget(EntityLivingBase caster, EntityLivingBase target) {
         if (isPlayerCaster(caster)) return null;
-        // A rotation-locked NPC cannot turn, so launching from the target's position would let
-        // it fire a perfectly aimed shot regardless of where it is facing. Fall back to the
-        // look vector, which reflects the frozen heading.
         if (isRotationLockedForCurrentPhase()) return null;
         return target;
     }

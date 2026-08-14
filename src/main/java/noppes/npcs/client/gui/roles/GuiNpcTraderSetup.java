@@ -117,12 +117,11 @@ public class GuiNpcTraderSetup extends GuiContainerNPCInterface2 implements ITex
 
     @Override
     public void save() {
-        // Linking to a different market already replaced the server's role with that market's
-        // data. Pushing this GUI's pre-link state back would overwrite the market being linked to.
+        // Relinking already loaded the target market server-side
         if (marketRelinked)
             return;
 
-        // Save the role first so the market is written from the edited data, not the stale data.
+        // Role first, so the market is written from the edited data
         PacketClient.sendClient(new RoleSavePacket(role.writeToNBT(new NBTTagCompound())));
         PacketClient.sendClient(new TraderMarketSavePacket(role.marketName, false));
     }

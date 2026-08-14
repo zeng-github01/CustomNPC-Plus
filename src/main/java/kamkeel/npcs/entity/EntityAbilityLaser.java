@@ -264,10 +264,7 @@ public class EntityAbilityLaser extends EntityEnergyProjectile {
             Vec3 anchorPos = AnchorPointHelper.calculateAnchorPosition(livingOwner, anchorData);
             setPosition(anchorPos.xCoord, anchorPos.yCoord, anchorPos.zCoord);
 
-            // Converge on the point the owner is aiming at, not on the target itself. Aiming
-            // straight at the target would re-derive the direction every tick and ignore the
-            // rotation the owner is actually allowed to reach, which is what track speed and
-            // rotation lock constrain.
+            // Aim where the owner is looking so track speed and rotation lock still apply.
             double aimX = livingOwner.posX + dirX * maxLength;
             double aimY = livingOwner.posY + livingOwner.getEyeHeight() + dirY * maxLength;
             double aimZ = livingOwner.posZ + dirZ * maxLength;

@@ -74,6 +74,22 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.ServerChatEvent;
+import noppes.npcs.CustomItems;
+import noppes.npcs.CustomNpcs;
+import noppes.npcs.DataAI;
+import noppes.npcs.DataAbilities;
+import noppes.npcs.DataAdvanced;
+import noppes.npcs.DataDisplay;
+import noppes.npcs.DataInventory;
+import noppes.npcs.DataStats;
+import noppes.npcs.EventHooks;
+import noppes.npcs.IChatMessages;
+import noppes.npcs.NBTTags;
+import noppes.npcs.NoppesUtilPlayer;
+import noppes.npcs.LogWriter;
+import noppes.npcs.NoppesUtilServer;
+import noppes.npcs.NpcDamageSource;
+import noppes.npcs.VersionCompatibility;
 import noppes.npcs.*;
 import noppes.npcs.ai.CombatHandler;
 import noppes.npcs.ai.EntityAIAmbushTarget;
@@ -114,7 +130,6 @@ import noppes.npcs.api.entity.ICustomNpc;
 import noppes.npcs.api.handler.data.ILine;
 import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.client.EntityUtil;
-import noppes.npcs.config.ConfigExperimental;
 import noppes.npcs.config.ConfigMain;
 import noppes.npcs.config.ConfigScript;
 import noppes.npcs.constants.EnumAnimation;
@@ -324,17 +339,6 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
                 }
             }
             this.timers.update();
-        }
-    }
-
-    @Override
-    protected void updatePotionEffects() {
-        try {
-            super.updatePotionEffects();
-        } catch (ConcurrentModificationException ignored) {
-            // Vanilla potion-effect updates can mutate the active potion map while it is being iterated,
-            // which can crash the server from EntityLivingBase.updatePotionEffects().
-            // Skip this tick's super update and continue with the custom NPC logic.
         }
     }
 
@@ -653,6 +657,45 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
             }
         }
         return null;
+    }
+
+    @Override
+    protected void kill() {
+        if (!worldObj.isRemote && ConfigMain.NpcVoidRecovery && posY < -64.0D && returnFromVoid())
+            return;
+        super.kill();
+    }
+
+    /**
+     * Puts the npc back on its start position after it has dropped out of the world.
+     * Offset by one block so a hole in the floor underneath does not drop it straight back down.
+     */
+    private boolean returnFromVoid() {
+        int[] start = getStartPos();
+        int x = start[0];
+        int y = start[1];
+        int z = start[2];
+
+        // A npc that fell before its start position was stored has the void baked into it.
+        if (y < 1 || y > worldObj.getHeight()) {
+            y = worldObj.getTopSolidOrLiquidBlock(x, z);
+            if (y < 1)
+                return false;
+            ais.startPos = new int[]{x, y, z};
+        }
+
+        setLocationAndAngles(x + 1.5D, y + 1.0D, z + 0.5D, rotationYaw, rotationPitch);
+        motionX = motionY = motionZ = 0;
+        fallDistance = 0;
+        isAirBorne = false;
+        ySize = 0;
+        extinguish();
+        getNavigator().clearPathEntity();
+        if (canFly()) {
+            ((PathNavigateFlying) getNavigator()).targetPos = null;
+            ((FlyingMoveHelper) getMoveHelper()).update = false;
+        }
+        return true;
     }
 
     @Override
@@ -1283,9 +1326,30 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
             World.MAX_ENTITY_RADIUS = newWidth / 2;
         }
 
+        applyHitbox(newWidth, newHeight);
+    }
+
+    /**
+     * Applies a new hitbox size, nudging the npc back out of anything it grew into the way
+     * vanilla setSize does. A block the box overlaps stops resolving downward collision.
+     */
+    protected void applyHitbox(float newWidth, float newHeight) {
+        float oldWidth = this.width;
         this.width = newWidth;
         this.height = newHeight;
         this.setPosition(posX, posY, posZ);
+
+        if (newWidth > oldWidth && !this.firstUpdate && !this.worldObj.isRemote) {
+            // Lying and crawling widen the box, and moveEntity would answer that by stepping the
+            // npc up onto whatever it now touches. Only the horizontal push is wanted here.
+            float prevStepHeight = this.stepHeight;
+            this.stepHeight = 0.0F;
+            try {
+                this.moveEntity(oldWidth - newWidth, 0.0D, oldWidth - newWidth);
+            } finally {
+                this.stepHeight = prevStepHeight;
+            }
+        }
     }
 
     @Override
@@ -1537,14 +1601,9 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
             }
             droppedXp = event.expDropped;
 
-            if (ConfigExperimental.LegacyDrop) {
-                inventory.dropItems(entity, droppedItems);
-            }
             if (this.recentlyHit > 0) {
+                inventory.dropItems(entity, droppedItems);
                 inventory.dropXp(entity, droppedXp);
-                if (!ConfigExperimental.LegacyDrop) {
-                    inventory.dropItems(entity, droppedItems);
-                }
             }
             Line line = advanced.getKilledLine();
             if (line != null)
@@ -1749,7 +1808,7 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
 
     @Override
     public void knockBack(Entity par1Entity, float par2, double par3, double par5) {
-        if (!ConfigExperimental.useLegacyKnockback && stats.resistances.knockback >= 2)
+        if (stats.resistances.knockback >= 2)
             return;
         this.isAirBorne = true;
         float f1 = MathHelper.sqrt_double(par3 * par3 + par5 * par5);
