@@ -855,6 +855,7 @@ quest.track=Track
 quest.tracking=Tracking
 quest.alerts=Alerts
 quest.noAlerts=No Alerts
+quest.repeat.left="You have %s left until you can repeat this quest.";
 
 gui.api=API
 

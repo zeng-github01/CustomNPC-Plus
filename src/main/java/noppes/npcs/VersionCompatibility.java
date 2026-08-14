@@ -4,6 +4,8 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraftforge.common.util.Constants;
+import noppes.npcs.constants.EnumPotionType;
 import noppes.npcs.controllers.data.Line;
 import noppes.npcs.controllers.data.Lines;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -11,6 +13,7 @@ import noppes.npcs.entity.data.ModelRotate;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public class VersionCompatibility {
     public static int ModRev = 23;
@@ -67,14 +70,6 @@ public class VersionCompatibility {
                 compound.setInteger("maxDelay", max);
                 compound.removeTag("FiringDelay");
                 compound.removeTag("DelayVariance");
-            }
-
-            if (compound.hasKey("pEffect")) {
-                int effect = compound.getInteger("pEffect");
-                EnumPotionType enumPotionType = EnumPotionType.fromOrdinal(effect);
-                if (enumPotionType == EnumPotionType.Fire) {
-                    compound.setBoolean("pBurnItem", true);
-                }
             }
         }
         if (npc.npcVersion < 12) {
