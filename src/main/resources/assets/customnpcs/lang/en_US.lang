@@ -857,6 +857,11 @@ quest.alerts=Alerts
 quest.noAlerts=No Alerts
 quest.repeat.left=You have %s left until you can repeat this quest.
 
+time.day=%d day
+time.hour=%d hour
+time.minute=%d minute
+time.second=%d second
+
 gui.api=API
 
 script.scripts=Scripts

@@ -629,6 +629,13 @@ quest.track=追踪
 quest.tracking=追踪
 quest.alerts=提醒
 quest.noAlerts=无提醒
+quest.repeat.left=距离你再次接取此任务还需等待 %s。
+
+time.day=%d 天
+time.hour=%d 小时
+time.minute=%d 分钟
+time.second=%d 秒
+
 
 script.apidoc=API 文档
 script.apisrc=API 源
