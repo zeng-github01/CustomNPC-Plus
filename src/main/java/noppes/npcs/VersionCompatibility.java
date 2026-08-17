@@ -200,6 +200,10 @@ public class VersionCompatibility {
             if (Objects.equals(compound.getString("NpcDeathSound"), "damage.hit")) {
                 compound.setString("NpcDeathSound", "minecraft:game.player.hurt");
             }
+
+            if (!compound.hasKey("CollidesWith")) {
+                compound.setInteger("CollidesWith", 0);
+            }
         }
         if (npc.npcVersion == 13) {
             boolean bo = compound.getBoolean("HealthRegen");
