@@ -130,6 +130,7 @@ import noppes.npcs.api.entity.ICustomNpc;
 import noppes.npcs.api.handler.data.ILine;
 import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.client.EntityUtil;
+import noppes.npcs.config.ConfigExperimental;
 import noppes.npcs.config.ConfigMain;
 import noppes.npcs.config.ConfigScript;
 import noppes.npcs.constants.EnumAnimation;
@@ -2207,6 +2208,7 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
     }
 
     public boolean canSee(Entity entity) {
+        if (!ConfigExperimental.cacheSense) return canEntityBeSeen(entity);
         return this.getEntitySenses().canSee(entity);
     }
 

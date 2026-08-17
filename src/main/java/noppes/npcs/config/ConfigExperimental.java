@@ -24,6 +24,8 @@ public class ConfigExperimental {
     public static boolean useLegacyRender = false;
     public static Property LegacyTraderProperty;
     public static boolean useLegacyTrader = false;
+    public static boolean cacheSense = false;
+    public static Property cacheSenseProperty;
 
 
     public static void init(File configFile) {
@@ -44,6 +46,8 @@ public class ConfigExperimental {
             useLegacyRender = useLegacyRenderProperty.getBoolean(false);
             LegacyTraderProperty = config.get(SERVER,"Use Legacy Trader Logical",false, "Use Legacy Trader Logical");
             useLegacyTrader = LegacyTraderProperty.getBoolean(false);
+            cacheSenseProperty = config.get(SERVER, "Cache Sense",true, "Use Cache Sense");
+            cacheSense = cacheSenseProperty.getBoolean(true);
         } catch (Exception e) {
             FMLLog.log(Level.ERROR, e, "CNPC+ has had a problem loading its experimental configuration");
         } finally {
