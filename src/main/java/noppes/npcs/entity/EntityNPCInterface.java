@@ -130,6 +130,7 @@ import noppes.npcs.api.entity.ICustomNpc;
 import noppes.npcs.api.handler.data.ILine;
 import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.client.EntityUtil;
+import noppes.npcs.config.ConfigExperimental;
 import noppes.npcs.config.ConfigMain;
 import noppes.npcs.config.ConfigScript;
 import noppes.npcs.constants.EnumAnimation;
@@ -738,7 +739,7 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
         if (faction.isPassive)
             return false;
 
-        if (attackingEntity != null && attackingEntity == getOwner())
+        if (!ConfigExperimental.LegacyAttackBehavior && attackingEntity != null && attackingEntity == getOwner())
             return false;
         else if (attackingEntity instanceof EntityNPCInterface) {
             EntityNPCInterface npc = (EntityNPCInterface) attackingEntity;
@@ -838,7 +839,7 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
 
     @Override
     public void setAttackTarget(EntityLivingBase entity) {
-        if (entity instanceof EntityPlayer && ((EntityPlayer) entity).capabilities.disableDamage || entity != null && entity == getOwner())
+        if (entity instanceof EntityPlayer && ((EntityPlayer) entity).capabilities.disableDamage || entity != null && (!ConfigExperimental.LegacyAttackBehavior && entity == getOwner()))
             return;
         if (entity instanceof EntityPlayer && DBCAddon.instance.isKO(this, (EntityPlayer) entity))
             return;

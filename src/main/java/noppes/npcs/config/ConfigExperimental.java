@@ -24,6 +24,8 @@ public class ConfigExperimental {
     public static boolean useLegacyRender = false;
     public static Property LegacyTraderProperty;
     public static boolean useLegacyTrader = false;
+    public static Property LegacyAttackBehaviorProperty;
+    public static boolean LegacyAttackBehavior = false;
 
 
     public static void init(File configFile) {
@@ -40,10 +42,12 @@ public class ConfigExperimental {
             LegacyDrop = LegacyDropProperty.getBoolean(false);
             useLegacyKnockbackProperty = config.get(SERVER, "Use legacy knockback", false, "Use legacy knockback for compatibility ");
             useLegacyKnockback = useLegacyKnockbackProperty.getBoolean(false);
-            useLegacyRenderProperty = config.get(CLIENT,"Legacy Render",false, "Use legacy Render for compatibility");
+            useLegacyRenderProperty = config.get(CLIENT, "Legacy Render", false, "Use legacy Render for compatibility");
             useLegacyRender = useLegacyRenderProperty.getBoolean(false);
-            LegacyTraderProperty = config.get(SERVER,"Use Legacy Trader Logical",false, "Use Legacy Trader Logical");
+            LegacyTraderProperty = config.get(SERVER, "Use Legacy Trader Logical", false, "Use Legacy Trader Logical");
             useLegacyTrader = LegacyTraderProperty.getBoolean(false);
+            LegacyAttackBehaviorProperty = config.get(SERVER, "Use Legacy Attack Logical", false, "Use Legacy Attack Logical");
+            LegacyAttackBehavior = LegacyAttackBehaviorProperty.getBoolean(false);
         } catch (Exception e) {
             FMLLog.log(Level.ERROR, e, "CNPC+ has had a problem loading its experimental configuration");
         } finally {
