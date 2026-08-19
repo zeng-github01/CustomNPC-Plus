@@ -2080,14 +2080,10 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
     }
 
     public boolean isInRange(double posX, double posY, double posZ, double range) {
-        double y = Math.abs(this.posY - posY);
-        if (posY >= 0 && y > range)
-            return false;
-
-        double x = Math.abs(this.posX - posX);
-        double z = Math.abs(this.posZ - posZ);
-
-        return x <= range && z <= range;
+        double dx = this.posX - posX;
+        double dy = this.posY - posY;
+        double dz = this.posZ - posZ;
+        return (dx * dx + dy * dy + dz * dz) <= (range * range);
     }
 
     @Override

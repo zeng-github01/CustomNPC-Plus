@@ -49,11 +49,9 @@ public class EntityAIClosestTarget extends EntityAITarget {
         if (this.targetChance > 0 && this.taskOwner.getRNG().nextInt(this.targetChance) != 0) {
             return false;
         } else {
-            taskOwner.getEntityAttribute(SharedMonsterAttributes.followRange).setBaseValue(((EntityNPCInterface) taskOwner).stats.aggroRange);
             double d0 = this.getTargetDistance();
             List list = this.taskOwner.worldObj.selectEntitiesWithinAABB(this.targetClass, this.taskOwner.boundingBox.expand(d0, MathHelper.ceiling_double_int(d0 / 2.0D), d0), this.field_82643_g);
             Collections.sort(list, this.theNearestAttackableTargetSorter);
-            taskOwner.getEntityAttribute(SharedMonsterAttributes.followRange).setBaseValue(ConfigMain.NpcNavRange);
             if (list.isEmpty()) {
                 return false;
             } else {

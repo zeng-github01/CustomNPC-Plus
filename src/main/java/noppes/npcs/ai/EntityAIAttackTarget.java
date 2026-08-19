@@ -62,9 +62,7 @@ public class EntityAIAttackTarget extends EntityAIBase {
             return false;
         } else {
             this.entityTarget = entitylivingbase;
-            this.npc.getEntityAttribute(SharedMonsterAttributes.followRange).setBaseValue(((EntityNPCInterface) this.npc).stats.aggroRange);
             this.entityPathEntity = this.npc.getNavigator().getPathToEntityLiving(entitylivingbase);
-            this.npc.getEntityAttribute(SharedMonsterAttributes.followRange).setBaseValue(ConfigMain.NpcNavRange);
             return this.entityPathEntity != null;
         }
     }
