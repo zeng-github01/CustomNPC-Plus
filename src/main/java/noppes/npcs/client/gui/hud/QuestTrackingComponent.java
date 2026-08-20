@@ -78,9 +78,9 @@ public class QuestTrackingComponent extends HudComponent {
             }
 
             if (completed) {
-                objective = "&a&m" + objective;
+                objective = "&a&m" + replaceUnlocalized(objective);
             } else {
-                objective = "&6" + objective;
+                objective = "&6" + replaceUnlocalized(objective);
             }
 
             objectives.add(objective);
@@ -97,6 +97,28 @@ public class QuestTrackingComponent extends HudComponent {
         }
         setQuestData(quest, category, objectives, turnIn);
         hasData = true;
+    }
+
+    public String replaceUnlocalized(String unlocalized) {
+        if (unlocalized == null) return null;
+
+        if (unlocalized.endsWith("(Done)")) {
+            return replaceSuffix(unlocalized, "(Done)", "quest.status.done");
+        } else if (unlocalized.endsWith("(read)")) {
+            return replaceSuffix(unlocalized, "(read)", "quest.status.read");
+        } else if (unlocalized.endsWith("(unread)")) {
+            return replaceSuffix(unlocalized, "(unread)", "quest.status.unread");
+        } else if (unlocalized.endsWith("Not Found")) {
+            return replaceSuffix(unlocalized, "Not Found", "quest.status.notfound");
+        } else if (unlocalized.endsWith("Found")) {
+            return replaceSuffix(unlocalized, "Found", "quest.status.found");
+        }
+
+        return unlocalized;
+    }
+
+    private String replaceSuffix(String str, String suffix, String key) {
+        return str.substring(0, str.length() - suffix.length()) + I18n.format(key);
     }
 
     @Override

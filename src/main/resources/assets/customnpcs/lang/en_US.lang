@@ -857,6 +857,12 @@ quest.alerts=Alerts
 quest.noAlerts=No Alerts
 quest.repeat.left=You have %s left until you can repeat this quest.
 
+quest.status.read=(read)
+quest.status.unread=(unread)
+quest.status.done=(Done)
+quest.status.found=Found
+quest.status.notfound=Not Found
+
 time.day=%d day
 time.hour=%d hour
 time.minute=%d minute

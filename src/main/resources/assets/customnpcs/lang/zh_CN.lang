@@ -621,6 +621,7 @@ quest.completed=任务完成
 quest.newquest=新任务
 quest.noquests=你现在没有进行中的任务~
 quest.completewith=于 %s 处完成
+quest.autocompleted=自动完成
 quest.randomitem=随机物品
 quest.exp=经验值
 quest.takeitems=是否拿取玩家物品
@@ -630,6 +631,12 @@ quest.tracking=追踪
 quest.alerts=提醒
 quest.noAlerts=无提醒
 quest.repeat.left=距离你再次接取此任务还需等待 %s。
+
+quest.status.read=(已读)
+quest.status.unread=(未读)
+quest.status.done=(已完成)
+quest.status.found=已找到
+quest.status.notfound=未找到
 
 time.day=%d 天
 time.hour=%d 小时
