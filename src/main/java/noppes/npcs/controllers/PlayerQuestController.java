@@ -57,8 +57,7 @@ public class PlayerQuestController {
             long timeUntilRepeat = questData.quest.getTimeUntilRepeat(player);
             if (timeUntilRepeat > 0 && questData.quest.getIsRepeatable() && questData.quest.repeat != EnumQuestRepeat.NONE && questData.quest.repeat != EnumQuestRepeat.REPEATABLE) {
                 String timeString = NoppesUtilServer.millisToTime(timeUntilRepeat);
-                String message = "You have " + timeString + " left until you can repeat this quest.";
-                player.addChatMessage(new ChatComponentTranslation(NoppesStringUtils.formatText(message, player)));
+                player.addChatMessage(new ChatComponentTranslation("quest.repeat.left", timeString));
             }
         }
     }
