@@ -67,10 +67,6 @@ public class BlockBorder extends BlockContainer {
         }
 
         tile.rotation = l;
-
-        if (par5EntityLivingBase instanceof EntityPlayer) {
-            CustomNpcs.proxy.openGui(x, y, z, EnumGuiType.Border, (EntityPlayer) par5EntityLivingBase);
-        }
     }
 
     private TileBorder getTile(World world, int x, int y, int z) {
