@@ -50,6 +50,13 @@ public class BlockNpcRedstone extends BlockContainer {
     }
 
     @Override
+    public void onBlockPlacedBy(World world, int i, int j, int k, EntityLivingBase entityliving, ItemStack item) {
+        if (entityliving instanceof EntityPlayer && !world.isRemote) {
+            CustomNpcs.proxy.openGui(i, j, k, EnumGuiType.RedstoneBlock, (EntityPlayer) entityliving);
+        }
+    }
+
+    @Override
     public void onBlockDestroyedByPlayer(World par1World, int par2, int par3, int par4, int par5) {
         onBlockAdded(par1World, par2, par3, par4);
     }
