@@ -58,17 +58,31 @@ public class TextBlockClient extends TextBlock {
                     continue;
                 }
             }
-            String newLine;
-            if (line.isEmpty())
-                newLine = word;
-            else
-                newLine = line + " " + word;
+            String newLine = line.isEmpty() ? word : line + " " + word;
+            int newLineWidth = mcFont ? font.getStringWidth(newLine) : ClientProxy.Font.width(newLine);
 
-            if ((mcFont ? font.getStringWidth(newLine) : ClientProxy.Font.width(newLine)) > lineWidth) {
-                addLine(line);
-                line = word.trim();
-            } else {
+            if (newLineWidth <= lineWidth) {
                 line = newLine;
+            } else {
+                int wordWidth = mcFont ? font.getStringWidth(word) : ClientProxy.Font.width(word);
+
+                if (!line.isEmpty() && wordWidth <= lineWidth) {
+                    addLine(line);
+                    line = word.trim();
+                } else {
+                    for (int i = 0; i < word.length(); i++) {
+                        char c = word.charAt(i);
+                        String testLine = line.isEmpty() ? String.valueOf(c) : line + c;
+                        int testWidth = mcFont ? font.getStringWidth(testLine) : ClientProxy.Font.width(testLine);
+
+                        if (testWidth > lineWidth && !line.isEmpty()) {
+                            addLine(line);
+                            line = String.valueOf(c);
+                        } else {
+                            line = testLine;
+                        }
+                    }
+                }
             }
         }
         if (!line.isEmpty())
