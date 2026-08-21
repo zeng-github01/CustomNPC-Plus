@@ -2378,6 +2378,13 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
         }
     }
 
+    @Override
+    protected void updatePotionEffects() {
+        try {
+            super.updatePotionEffects();
+        } catch (ConcurrentModificationException ignored) {}
+    }
+
     private void handleMountRiderState() {
         NPCMountUtil.handleMountRiderState(this, mountState);
     }
