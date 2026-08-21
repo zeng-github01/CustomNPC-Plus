@@ -177,7 +177,9 @@ public class GuiQuestLog extends GuiCNPCInventory implements ICustomScrollListen
         this.textWidth = 168;
         this.textHeight = 150;
 
-        this.block = new TextBlockClient(data.getQuestText(), textWidth - 10, true, player);
+        if (data.getQuestText() != null) {
+            this.block = new TextBlockClient(data.getQuestText(), textWidth - 10, true, player);
+        }
         this.textListHeight = (block != null) ? block.lines.size() * fontRendererObj.FONT_HEIGHT : 0;
         this.textScrolledY = 0;
     }
