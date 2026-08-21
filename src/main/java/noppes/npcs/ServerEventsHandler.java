@@ -46,6 +46,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 import noppes.npcs.blocks.tiles.ITileIcon;
 import noppes.npcs.config.ConfigDebug;
+import noppes.npcs.config.ConfigExperimental;
 import noppes.npcs.config.ConfigMain;
 import noppes.npcs.constants.EnumGuiType;
 import noppes.npcs.constants.EnumPartyObjectives;
@@ -233,7 +234,7 @@ public class ServerEventsHandler {
         ItemStack item = player.getCurrentEquippedItem();
         if (item == null || !(item.getItem() instanceof ItemShield))
             return;
-        if (((ItemShield) item.getItem()).material.getDamageVsEntity() < player.getRNG().nextInt(9))
+        if (!ConfigExperimental.useLegacyShieldLogic && ((ItemShield) item.getItem()).material.getDamageVsEntity() < player.getRNG().nextInt(9))
             return;
         float damage = item.getItemDamage() + event.ammount;
 
