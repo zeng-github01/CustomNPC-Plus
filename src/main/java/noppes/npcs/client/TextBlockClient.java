@@ -9,6 +9,11 @@ import noppes.npcs.NoppesStringUtils;
 import noppes.npcs.TextBlock;
 import noppes.npcs.controllers.data.Dialog;
 
+/**
+ * Client-side text block implementation supporting standard English word-wrapping,
+ * CJK character layout, Minecraft formatting code ('§') preservation, and line-start
+ * punctuation prohibition (Kinsoku Shori).
+ */
 public class TextBlockClient extends TextBlock {
     private ChatStyle style;
     public int color = 0xe0e0e0;
@@ -16,6 +21,11 @@ public class TextBlockClient extends TextBlock {
     public int titlePos = 0;
     private String name;
     private ICommandSender sender;
+
+    /**
+     * Punctuation marks prohibited at the start of a line (Kinsoku Shori / Line-start prohibition).
+     */
+    private static final String NO_START_PUNCT = "，。！？；：”’）]}》、,.!?:;)]}";
 
     public TextBlockClient(ICommandSender sender, Dialog dialog, Object... obs) {
         this(dialog.text, dialog.textWidth, false, obs);
@@ -41,52 +51,116 @@ public class TextBlockClient extends TextBlock {
         style = new ChatStyle();
         text = NoppesStringUtils.formatText(text, obs);
 
-        String line = "";
-        text = text.replace("\n", " \n ");
-        text = text.replace("\r", " \r ");
-        String[] words = text.split(" ");
+        // Normalize newlines across platforms
+        String[] rawLines = text.split("\\R", -1);
 
-        FontRenderer font = Minecraft.getMinecraft().fontRenderer;
-        for (String word : words) {
-            if (word.isEmpty())
+        // Active state of formatting codes (e.g., "§c§l") to carry over line breaks
+        String activeFormatting = "";
+
+        for (String rawLine : rawLines) {
+            if (rawLine.isEmpty()) {
+                addLine("");
                 continue;
-            if (word.length() == 1) {
-                char c = word.charAt(0);
-                if (c == '\r' || c == '\n') {
-                    addLine(line);
-                    line = "";
+            }
+
+            StringBuilder currentLine = new StringBuilder();
+            String[] words = rawLine.split(" ");
+
+            for (int wIdx = 0; wIdx < words.length; wIdx++) {
+                String word = words[wIdx];
+                if (word.isEmpty()) {
+                    if (wIdx > 0) currentLine.append(" ");
                     continue;
                 }
-            }
-            String newLine = line.isEmpty() ? word : line + " " + word;
-            int newLineWidth = mcFont ? font.getStringWidth(newLine) : ClientProxy.Font.width(newLine);
 
-            if (newLineWidth <= lineWidth) {
-                line = newLine;
-            } else {
-                int wordWidth = mcFont ? font.getStringWidth(word) : ClientProxy.Font.width(word);
+                // Test total width when adding the current word (English word-wrap optimization)
+                String prefix = (currentLine.length() == 0) ? "" : " ";
+                String testStr = currentLine.toString() + prefix + word;
 
-                if (!line.isEmpty() && wordWidth <= lineWidth) {
-                    addLine(line);
-                    line = word.trim();
+                if (getStringWidth(activeFormatting + testStr, mcFont) <= lineWidth) {
+                    if (currentLine.length() > 0) currentLine.append(" ");
+                    currentLine.append(word);
                 } else {
+                    // Fall back to character-by-character processing for long words or CJK blocks
                     for (int i = 0; i < word.length(); i++) {
                         char c = word.charAt(i);
-                        String testLine = line.isEmpty() ? String.valueOf(c) : line + c;
-                        int testWidth = mcFont ? font.getStringWidth(testLine) : ClientProxy.Font.width(testLine);
 
-                        if (testWidth > lineWidth && !line.isEmpty()) {
-                            addLine(line);
-                            line = String.valueOf(c);
-                        } else {
-                            line = testLine;
+                        // 1. Prevent splitting Minecraft formatting codes (§x) across lines
+                        if (c == '§' && i + 1 < word.length()) {
+                            char formatChar = word.charAt(i + 1);
+                            currentLine.append('§').append(formatChar);
+                            activeFormatting = updateFormatting(activeFormatting, formatChar);
+                            i++; // Skip formatting character code
+                            continue;
                         }
+
+                        // 2. Measure line width including candidate character
+                        String nextStr = currentLine.toString() + c;
+
+                        if (getStringWidth(activeFormatting + nextStr, mcFont) > lineWidth && currentLine.length() > 0) {
+
+                            // 3. Line-start prohibition (Kinsoku Shori):
+                            // If character is prohibited at line start, pull down the preceding character
+                            if (NO_START_PUNCT.indexOf(c) != -1 && currentLine.length() > 0) {
+                                char lastChar = currentLine.charAt(currentLine.length() - 1);
+
+                                // Avoid severing formatting sequences (e.g., '§' followed by a code)
+                                if (currentLine.length() >= 2 && currentLine.charAt(currentLine.length() - 2) == '§') {
+                                    addLine(activeFormatting + currentLine.toString());
+                                    currentLine.setLength(0);
+                                    currentLine.append(c);
+                                } else {
+                                    currentLine.deleteCharAt(currentLine.length() - 1);
+                                    addLine(activeFormatting + currentLine.toString());
+                                    currentLine.setLength(0);
+                                    currentLine.append(lastChar).append(c);
+                                }
+                            } else {
+                                addLine(activeFormatting + currentLine.toString());
+                                currentLine.setLength(0);
+                                currentLine.append(c);
+                            }
+                        } else {
+                            currentLine.append(c);
+                        }
+                    }
+
+                    // Re-add trailing spaces between split words
+                    if (wIdx < words.length - 1) {
+                        currentLine.append(" ");
                     }
                 }
             }
+
+            if (currentLine.length() > 0) {
+                addLine(activeFormatting + currentLine.toString());
+            }
         }
-        if (!line.isEmpty())
-            addLine(line);
+    }
+
+    private int getStringWidth(String text, boolean mcFont) {
+        if (text.isEmpty()) return 0;
+        FontRenderer font = Minecraft.getMinecraft().fontRenderer;
+        return mcFont ? font.getStringWidth(text) : ClientProxy.Font.width(text);
+    }
+
+    /**
+     * Updates active formatting states based on newly encountered control codes.
+     */
+    private String updateFormatting(String current, char code) {
+        code = Character.toLowerCase(code);
+        if (code == 'r') return ""; // Reset formatting
+
+        // Color codes override active colors
+        if ("0123456789abcdef".indexOf(code) != -1) {
+            return "§" + code;
+        }
+
+        // Append style modifiers (bold, italic, underline, etc.)
+        if (!current.contains("§" + code)) {
+            return current + "§" + code;
+        }
+        return current;
     }
 
     private void addLine(String text) {
