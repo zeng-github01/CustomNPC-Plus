@@ -58,7 +58,7 @@ public class EntityAIAvoidTarget extends EntityAIBase {
 
         targetEntityClass = target.getClass();
 
-        if (this.targetEntityClass == EntityPlayer.class) {
+        if (target instanceof EntityPlayer) {
             this.closestLivingEntity = this.theEntity.worldObj.getClosestPlayerToEntity(this.theEntity, (double) this.distanceFromEntity);
 
             if (this.closestLivingEntity == null) {
