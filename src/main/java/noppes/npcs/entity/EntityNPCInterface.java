@@ -170,6 +170,7 @@ import noppes.npcs.scripted.item.ScriptCustomizableItem;
 import noppes.npcs.util.GameProfileAlt;
 import noppes.npcs.util.NPCMountUtil;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
@@ -912,17 +913,22 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
         return projectile;
     }
 
-    private void clearTasks(EntityAITasks tasks) {
+    private void clearTasks(@Nonnull EntityAITasks tasks) {
         Iterator iterator = tasks.taskEntries.iterator();
-        List<EntityAITaskEntry> list = new ArrayList(tasks.taskEntries);
-        for (EntityAITaskEntry entityaitaskentry : list) {
-            try {
-                tasks.removeTask(entityaitaskentry.action);
-            } catch (Throwable e) {
 
+        while (iterator.hasNext())
+        {
+            EntityAITasks.EntityAITaskEntry entityaitaskentry = (EntityAITasks.EntityAITaskEntry)iterator.next();
+            EntityAIBase entityaibase1 = entityaitaskentry.action;
+
+            if (tasks.executingTaskEntries.contains(entityaitaskentry))
+            {
+                entityaibase1.resetTask();
+                tasks.executingTaskEntries.remove(entityaitaskentry);
             }
+
+            iterator.remove();
         }
-        tasks.taskEntries = new ArrayList<EntityAITaskEntry>();
     }
 
     public void updateTasks() {
