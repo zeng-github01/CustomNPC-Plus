@@ -613,12 +613,11 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
 
     @Override
     protected void updateAITasks() {
-        this.getNavigator().onUpdateNavigation();
-        this.getMoveHelper().onUpdateMoveHelper();
-        try {
-            super.updateAITasks();
-        } catch (ConcurrentModificationException ignored) {
-        }
+       if (canFly()) {
+           this.getNavigator().onUpdateNavigation();
+           this.getMoveHelper().onUpdateMoveHelper();
+       }
+        super.updateAITasks();
 
         if (!this.canBreathe()) {
             this.setAir(this.decreaseAirSupply(this.getAir()));
@@ -633,7 +632,7 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
     public void addInteract(EntityLivingBase entity) {
         if (!ais.stopAndInteract || isAttacking() || !entity.isEntityAlive())
             return;
-        if ((ticksExisted - lastInteract) < 180)
+        if ((ticksExisted - lastInteract) > 180)
             interactingEntities.clear();
         getNavigator().clearPathEntity();
         lastInteract = ticksExisted;
@@ -1553,7 +1552,7 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
         }
     }
 
-    private static final ItemStack[] lastActive = new ItemStack[5];
+    private final ItemStack[] lastActive = new ItemStack[5];
 
     @Override
     public ItemStack[] getLastActiveItems() {

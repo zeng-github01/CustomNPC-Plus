@@ -1,6 +1,7 @@
 package noppes.npcs.ai;
 
 import net.minecraft.entity.ai.EntityAIBase;
+import noppes.npcs.constants.AiMutex;
 import noppes.npcs.entity.EntityNPCInterface;
 
 public class EntityAIWaterNav extends EntityAIBase {
@@ -9,6 +10,7 @@ public class EntityAIWaterNav extends EntityAIBase {
     public EntityAIWaterNav(EntityNPCInterface par1EntityNPCInterface) {
         this.theEntity = par1EntityNPCInterface;
         par1EntityNPCInterface.getNavigator().setCanSwim(true);
+        setMutexBits(AiMutex.PATHING);
     }
 
     /**
