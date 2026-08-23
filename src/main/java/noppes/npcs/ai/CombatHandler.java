@@ -11,6 +11,7 @@ import noppes.npcs.entity.EntityNPCInterface;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Random;
 
 public class CombatHandler {
 
@@ -149,6 +150,12 @@ public class CombatHandler {
         }
 
         return threatLevel;
+    }
+
+    public boolean shouldChangeTarget(EntityLivingBase entity, double chance) {
+        // Assuming randomNum is a random number between 0 and 100
+        double randomNum = entity.getRNG().nextDouble() * 100; // Generates a random number between 0 and 100
+        return randomNum < chance;
     }
 
     public boolean shouldChangeTarget(double chance) {
