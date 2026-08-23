@@ -56,9 +56,7 @@ public class JobGuard extends JobInterface {
             return true;
 
         if (entity instanceof EntityAnimal) {
-            if (!attacksAnimals || entity instanceof EntityTameable && ((EntityTameable) entity).getOwner() != null)
-                return false;
-            return true;
+            return attacksAnimals && (!(entity instanceof EntityTameable) || ((EntityTameable) entity).getOwner() == null);
         } else if (entity instanceof EntityCreeper) {
             return attackCreepers;
         } else if (entity instanceof IMob || entity instanceof EntityDragon) {
