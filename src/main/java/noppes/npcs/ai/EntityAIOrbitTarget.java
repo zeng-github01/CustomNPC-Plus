@@ -74,6 +74,7 @@ public class EntityAIOrbitTarget extends EntityAIBase {
      * Execute a one shot task or start executing a continuous task
      */
     public void startExecuting() {
+        this.tick = 0;
         this.canNavigate = true;
         Random random = this.theEntity.getRNG();
         this.direction = random.nextInt(10) > 5 ? 1 : -1;
@@ -109,7 +110,7 @@ public class EntityAIOrbitTarget extends EntityAIBase {
                 }
             }
         }
-        if (this.tick >= 0) this.tick--;
+        if (this.tick > 0) this.tick--;
     }
 
 }
