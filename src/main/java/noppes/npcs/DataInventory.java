@@ -55,14 +55,14 @@ public class DataInventory implements IInventory {
         setArmor(NBTTags.getItemStackList(nbttagcompound.getTagList("Armor", 10)));
         setWeapons(NBTTags.getItemStackList(nbttagcompound.getTagList("Weapons", 10)));
 
-        if (!nbttagcompound.hasKey("DoubleDropChance")) {
+        if (nbttagcompound.hasKey("DoubleDropChance") && nbttagcompound.getTagList("DoubleDropChance", 10).tagCount() > 0) {
+            dropchance = NBTTags.getIntegerDoubleMap(nbttagcompound.getTagList("DoubleDropChance", 10));
+        } else {
             dropchance.clear();
             HashMap<Integer, Integer> oldDropChance = NBTTags.getIntegerIntegerMap(nbttagcompound.getTagList("DropChance", 10));
             for (int i = 0; i < oldDropChance.entrySet().size(); i++) {
                 dropchance.put(i, Double.valueOf(oldDropChance.get(i)));
             }
-        } else {
-            dropchance = NBTTags.getIntegerDoubleMap(nbttagcompound.getTagList("DoubleDropChance", 10));
         }
 
         lootMode = nbttagcompound.getInteger("LootMode");
