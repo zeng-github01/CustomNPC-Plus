@@ -20,7 +20,7 @@ public class EntityAIMovingPath extends EntityAIBase {
      */
     @Override
     public boolean shouldExecute() {
-        if (npc.isAttacking() || npc.isInteracting() || npc.getRNG().nextInt(40) != 0 && npc.ais.movingPause || !npc.getNavigator().noPath() || npc.isInteracting())
+        if (npc.isAttacking() || npc.isInteracting() || npc.getRNG().nextInt(40) != 0 && npc.ais.movingPause || !npc.getNavigator().noPath())
             return false;
 
         List<int[]> list = npc.ais.getMovingPath();

@@ -119,10 +119,6 @@ public class CombatHandler {
             }
         }
 
-        if (target != null && target != npc.getAttackTarget()) {
-            npc.setAttackTarget(target);
-        }
-
         return target == null;
     }
 

@@ -1026,7 +1026,7 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
                     default:
                 }
             }
-            this.tasks.addTask(this.taskCount++, aiAttackTarget = new EntityAIAttackTarget(this));
+            this.tasks.addTask(this.taskCount, aiAttackTarget = new EntityAIAttackTarget(this));
             ((EntityAIAttackTarget) aiAttackTarget).navOverride(ais.tacticalVariant == EnumNavType.None);
 
             if (this.inventory.getProjectile() != null) {
