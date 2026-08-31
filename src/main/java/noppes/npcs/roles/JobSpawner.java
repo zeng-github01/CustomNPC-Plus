@@ -220,7 +220,7 @@ public class JobSpawner extends JobInterface {
 
     public boolean shouldDelete(EntityLivingBase entity) {
         return npc.getDistanceToEntity(entity) > 60 || entity.isDead || entity.getHealth() <= 0 ||
-            PixelmonHelper.Enabled && hasPixelmon() && !PixelmonHelper.isBattling(entity) || (despawnOnSummonerDeath && npc.isDead) || despawnOnTargetLost && target == null;
+            PixelmonHelper.Enabled && hasPixelmon() && !PixelmonHelper.isBattling(entity) || (despawnOnSummonerDeath && npc.isDead) || (despawnOnTargetLost && target == null);
     }
 
     private EntityLivingBase getTarget() {

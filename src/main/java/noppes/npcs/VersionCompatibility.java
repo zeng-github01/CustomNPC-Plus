@@ -195,7 +195,7 @@ public class VersionCompatibility {
                 compound.setInteger("NpcVisible", 2);
             }
 
-            if (compound.hasKey("SpawnerDoesntDie") && !compound.hasKey("DespawnOnTargetLost") && !compound.getBoolean("DespawnOnSummmoner")) {
+            if (compound.hasKey("SpawnerDoesntDie") && !compound.hasKey("DespawnOnTargetLost")) {
                 compound.setBoolean("DespawnOnTargetLost", true);
             }
 
