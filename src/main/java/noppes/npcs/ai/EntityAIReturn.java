@@ -31,7 +31,7 @@ public class EntityAIReturn extends EntityAIBase {
             return false;
         }
 
-        if (npc.hasOwner() || npc.isKilled() || npc.isInteracting()) {
+        if (npc.hasOwner() || npc.isKilled() || npc.isInteracting() || !npc.getNavigator().noPath()) {
             return false;
         }
 
@@ -56,7 +56,7 @@ public class EntityAIReturn extends EntityAIBase {
         if (npc.ais.movingType == EnumMovingType.MovingPath && npc.ais.getDistanceSqToPathPoint() < ConfigMain.NpcNavRange * ConfigMain.NpcNavRange)
             return false;
 
-        if (npc.getNavigator().noPath() || (!npc.isAttacking() && wasAttacked)) {
+        if (!npc.isAttacking() && wasAttacked) {
             return true;
         }
 
@@ -140,7 +140,6 @@ public class EntityAIReturn extends EntityAIBase {
                 }
             }
         }
-
         if (range > 1.1f) {
             npc.getNavigator().clearPathEntity();
             npc.getNavigator().tryMoveToXYZ(posX, posY, posZ, 1);
