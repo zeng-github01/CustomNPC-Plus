@@ -839,7 +839,7 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
 
     @Override
     public void setAttackTarget(EntityLivingBase entity) {
-        if (entity instanceof EntityPlayer && ((EntityPlayer) entity).capabilities.disableDamage || entity != null && (!ConfigExperimental.LegacyAttackBehavior && entity == getOwner()))
+        if (entity instanceof EntityPlayer && ((EntityPlayer) entity).capabilities.disableDamage || entity != null && entity == getOwner())
             return;
         if (entity instanceof EntityPlayer && DBCAddon.instance.isKO(this, (EntityPlayer) entity))
             return;
