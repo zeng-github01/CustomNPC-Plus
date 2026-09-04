@@ -7,6 +7,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants;
+import noppes.npcs.config.ConfigExperimental;
 import noppes.npcs.constants.EnumPotionType;
 import noppes.npcs.controllers.data.Line;
 import noppes.npcs.controllers.data.Lines;
@@ -181,13 +182,14 @@ public class VersionCompatibility {
                 }
             }
 
-            if (compound.hasKey("SkinColor")) {
-                int skinColor = compound.getInteger("SkinColor");
-                if (skinColor != 16777215) {
-                    compound.setBoolean("TintEnabled", true);
-                    compound.setInteger("GeneralTint", skinColor);
-                    compound.setInteger("GeneralAlpha", 100);
-                    compound.setBoolean("GeneralTintEnabled", true);
+            if (ConfigExperimental.useLegacyRender) {
+                if (compound.hasKey("SkinColor")) {
+                    int skinColor = compound.getInteger("SkinColor");
+                    if (skinColor != 16777215) {
+                        compound.setBoolean("TintEnabled", true);
+                        compound.setInteger("GeneralTint", skinColor);
+                        compound.setBoolean("GeneralTintEnabled", true);
+                    }
                 }
             }
 
@@ -196,7 +198,41 @@ public class VersionCompatibility {
             }
 
             if (compound.hasKey("SpawnerDoesntDie") && !compound.hasKey("DespawnOnTargetLost")) {
-                compound.setBoolean("DespawnOnTargetLost", true);
+                boolean oldDoesntDie = compound.getBoolean("SpawnerDoesntDie");
+                int spawnType = compound.getInteger("SpawnerType");
+
+                boolean newDoesntDie;
+                boolean newDespawnOnTargetLost;
+                boolean newDespawnOnSummonerDeath;
+
+                // Case 1: Death summon (spawnType == 3)
+                // Force full protection. Prevents the spawner from self-destructing while alive due to an empty list,
+                // and prevents summoned entities from being instantly despawned post-death due to target == null
+                if (spawnType == 3) {
+                    newDoesntDie = true;
+                    newDespawnOnTargetLost = false;
+                    newDespawnOnSummonerDeath = false;
+                }
+                // Case 2: One-time / Quest-stage spawner (doesntDie == false)
+                // Disable target-lost despawning. Fully preserves legacy behavior of keeping spawned mobs when the player dies or retreats,
+                // avoiding false self-destruction when number >= 6
+                else if (!oldDoesntDie) {
+                    newDoesntDie = false;
+                    newDespawnOnTargetLost = false;
+                    newDespawnOnSummonerDeath = false;
+                }
+                // Case 3: Persistent / Endless spawner (doesntDie == true)
+                // Enable target-lost and summoner-death despawning. Aligns with repeating spawner reset logic (auto-clear mobs on losing target to await next trigger)
+                else {
+                    newDoesntDie = true;
+                    newDespawnOnTargetLost = true;
+                    newDespawnOnSummonerDeath = true;
+                }
+
+                // Write sanitized modern NBT data
+                compound.setBoolean("SpawnerDoesntDie", newDoesntDie);
+                compound.setBoolean("DespawnOnTargetLost", newDespawnOnTargetLost);
+                compound.setBoolean("DespawnOnSummmoner", newDespawnOnSummonerDeath);
             }
 
             if (compound.getBoolean("HealthRegen")) {
