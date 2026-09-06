@@ -22,8 +22,6 @@ public class ConfigExperimental {
     public static boolean useLegacyRender = false;
     public static Property LegacyTraderProperty;
     public static boolean useLegacyTrader = false;
-    public static Property LegacyAttackBehaviorProperty;
-    public static boolean LegacyAttackBehavior = false;
     public static Property useLegacyShieldLogicProperty;
     public static boolean useLegacyShieldLogic = false;
 
@@ -44,8 +42,6 @@ public class ConfigExperimental {
             useLegacyRender = useLegacyRenderProperty.getBoolean(false);
             LegacyTraderProperty = config.get(SERVER, "Use Legacy Trader Logical", false, "Use Legacy Trader Logical");
             useLegacyTrader = LegacyTraderProperty.getBoolean(false);
-            LegacyAttackBehaviorProperty = config.get(SERVER, "Use Legacy Attack Logical", false, "Use Legacy Attack Logical");
-            LegacyAttackBehavior = LegacyAttackBehaviorProperty.getBoolean(false);
             useLegacyShieldLogicProperty = config.get(SERVER,"Use Legacy Shield Logic",false, "Set to true to enable 100% guaranteed shield blocking");
             useLegacyShieldLogic = useLegacyShieldLogicProperty.getBoolean(false);
         } catch (Exception e) {

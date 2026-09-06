@@ -739,7 +739,7 @@ public abstract class EntityNPCInterface extends EntityCreature implements IEnti
         if (faction.isPassive)
             return false;
 
-        if (!ConfigExperimental.LegacyAttackBehavior && attackingEntity != null && attackingEntity == getOwner())
+        if (attackingEntity != null && attackingEntity == getOwner())
             return false;
         else if (attackingEntity instanceof EntityNPCInterface) {
             EntityNPCInterface npc = (EntityNPCInterface) attackingEntity;
