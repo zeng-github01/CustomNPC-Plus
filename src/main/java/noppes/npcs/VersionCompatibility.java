@@ -197,12 +197,9 @@ public class VersionCompatibility {
                 compound.setInteger("NpcVisible", 2);
             }
 
-            if (compound.hasKey("SpawnerDoesntDie") && (!compound.hasKey("DespawnOnTargetLost") || !compound.hasKey("DespawnOnSummmoner"))) {
-                boolean oldDoesntDie = compound.getBoolean("SpawnerDoesntDie");
-
-                compound.setBoolean("SpawnerDoesntDie", oldDoesntDie);
-                compound.setBoolean("DespawnOnTargetLost", oldDoesntDie);
-                compound.setBoolean("DespawnOnSummmoner", oldDoesntDie);
+            if (compound.hasKey("SpawnerDoesntDie")) {
+                compound.setBoolean("DespawnOnTargetLost", true);
+                compound.setBoolean("DespawnOnSummmoner", true);
             }
 
             if (compound.getBoolean("HealthRegen")) {
