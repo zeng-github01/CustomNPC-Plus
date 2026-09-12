@@ -193,10 +193,6 @@ public class VersionCompatibility {
                 }
             }
 
-            if (!compound.getString("GlowTexture").isEmpty() && compound.getInteger("NpcVisible") == 1) {
-                compound.setInteger("NpcVisible", 2);
-            }
-
             if (compound.hasKey("SpawnerDoesntDie")) {
                 compound.setBoolean("DespawnOnTargetLost", true);
                 compound.setBoolean("DespawnOnSummmoner", true);

@@ -170,20 +170,20 @@ public class DataDisplay {
         cloakTexture = nbttagcompound.getString("CloakTexture");
         glowTexture = nbttagcompound.getString("GlowTexture");
 
-        if (!nbttagcompound.hasKey("SkinOverlayData") && !glowTexture.isEmpty()) {
+        if (!glowTexture.isEmpty()) {
             NBTTagCompound compound = new NBTTagCompound();
-            compound.setInteger("SkinOverlayID", 0); //unique glow texture ID
-
+            compound.setInteger("SkinOverlayID", 0); // unique glow texture ID
             (new SkinOverlay(glowTexture)).writeToNBT(compound);
 
             if (!nbttagcompound.hasKey("SkinOverlayData")) {
                 NBTTagList tagList = new NBTTagList();
                 tagList.appendTag(compound);
                 nbttagcompound.setTag("SkinOverlayData", tagList);
-            } else if (!glowTexture.isEmpty()) {
+            } else {
                 nbttagcompound.getTagList("SkinOverlayData", 10).appendTag(compound);
-                glowTexture = "";
             }
+
+            glowTexture = "";
         }
 
         skinOverlayData.readFromNBT(nbttagcompound);
