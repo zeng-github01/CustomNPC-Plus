@@ -58,8 +58,6 @@ public class RenderNPCInterface extends RenderLiving {
     }
 
     protected void renderName(EntityNPCInterface npc, double d, double d1, double d2) {
-        if (!this.func_110813_b(npc))
-            return;
         float f2 = npc.getDistanceToEntity(renderManager.livingPlayer);
         float f3 = npc.isSneaking() ? 32F : 64F;
 
@@ -87,7 +85,7 @@ public class RenderNPCInterface extends RenderLiving {
 
     public void doRenderShadowAndFire(Entity par1Entity, double par2, double par4, double par6, float par8, float par9) {
         EntityNPCInterface npc = (EntityNPCInterface) par1Entity;
-        if (!npc.isKilled() && !npc.scriptInvisibleToPlayer(Minecraft.getMinecraft().thePlayer))
+        if (!npc.isKilled() && !npc.isInvisibleToPlayer(Minecraft.getMinecraft().thePlayer))
             super.doRenderShadowAndFire(par1Entity, par2, par4, par6, par8, par9);
     }
 
