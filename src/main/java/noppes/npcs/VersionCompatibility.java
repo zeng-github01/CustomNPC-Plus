@@ -37,18 +37,6 @@ public class VersionCompatibility {
                     compound.setBoolean("pBurnItem", true);
                 }
             }
-
-            if (compound.hasKey("GuardAttackAll") && compound.getBoolean("GuardAttackAll") && !compound.hasKey("GuardSpecific") && !compound.hasKey("GuardTargets")) {
-                List<String> all = new ArrayList<String>();
-                for (Object entity : EntityList.stringToClassMapping.keySet()) {
-                    String name = "entity." + entity + ".name";
-                    Class cl = (Class) EntityList.stringToClassMapping.get(entity);
-                    if (EntityLivingBase.class.isAssignableFrom(cl))
-                        all.add(name);
-                }
-                compound.setBoolean("GuardSpecific", true);
-                compound.setTag("GuardTargets", NBTTags.nbtStringList(all));
-            }
         }
         if (npc.npcVersion < 22) {
             if (compound.hasKey("CanLeap")) {
@@ -83,6 +71,31 @@ public class VersionCompatibility {
                 compound.setInteger("maxDelay", max);
                 compound.removeTag("FiringDelay");
                 compound.removeTag("DelayVariance");
+            }
+
+            if (compound.hasKey("GuardAttackAll") && compound.getBoolean("GuardAttackAll")) {
+                List<String> all = new ArrayList<String>();
+                for (Object entity : EntityList.stringToClassMapping.keySet()) {
+                    String name = "entity." + entity + ".name";
+                    Class cl = (Class) EntityList.stringToClassMapping.get(entity);
+                    if (EntityLivingBase.class.isAssignableFrom(cl))
+                        all.add(name);
+                }
+                compound.setBoolean("GuardSpecific", true);
+                compound.setTag("GuardTargets", NBTTags.nbtStringList(all));
+            }
+
+            if (compound.hasKey("NpcJob")) {
+                int npcJob = compound.getInteger("NpcJob");
+                if (npcJob == 5) {
+                    compound.setByte("BossBar", (byte) 1);
+                    compound.setInteger("NpcJob", 0);
+                }
+            }
+
+            if (compound.hasKey("SpawnerDoesntDie")) {
+                compound.setBoolean("DespawnOnTargetLost", true);
+                compound.setBoolean("DespawnOnSummmoner", true);
             }
         }
         if (npc.npcVersion < 12) {
@@ -174,14 +187,6 @@ public class VersionCompatibility {
                 compound.setTag("MovingPathNew", finalList);
             }
 
-            if (compound.hasKey("NpcJob")) {
-                int npcJob = compound.getInteger("NpcJob");
-                if (npcJob == 5) {
-                    compound.setByte("BossBar", (byte) 1);
-                    compound.setInteger("NpcJob", 0);
-                }
-            }
-
             if (ConfigExperimental.useLegacyRender) {
                 if (compound.hasKey("SkinColor")) {
                     int skinColor = compound.getInteger("SkinColor");
@@ -191,11 +196,6 @@ public class VersionCompatibility {
                         compound.setBoolean("GeneralTintEnabled", true);
                     }
                 }
-            }
-
-            if (compound.hasKey("SpawnerDoesntDie")) {
-                compound.setBoolean("DespawnOnTargetLost", true);
-                compound.setBoolean("DespawnOnSummmoner", true);
             }
 
             if (compound.getBoolean("HealthRegen")) {
