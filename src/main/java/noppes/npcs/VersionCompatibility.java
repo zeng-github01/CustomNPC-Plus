@@ -69,8 +69,6 @@ public class VersionCompatibility {
                 int max = compound.getInteger("DelayVariance");
                 compound.setInteger("minDelay", min);
                 compound.setInteger("maxDelay", max);
-                compound.removeTag("FiringDelay");
-                compound.removeTag("DelayVariance");
             }
 
             if (compound.hasKey("GuardAttackAll") && compound.getBoolean("GuardAttackAll")) {
