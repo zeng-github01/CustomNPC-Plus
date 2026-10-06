@@ -71,7 +71,7 @@ public class VersionCompatibility {
                 compound.setInteger("maxDelay", max);
             }
 
-            if (compound.hasKey("GuardAttackAll") && compound.getBoolean("GuardAttackAll")) {
+            if (compound.getBoolean("GuardAttackAll")) {
                 List<String> all = new ArrayList<String>();
                 for (Object entity : EntityList.stringToClassMapping.keySet()) {
                     String name = "entity." + entity + ".name";
