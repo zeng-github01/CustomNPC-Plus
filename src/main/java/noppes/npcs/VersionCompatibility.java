@@ -158,31 +158,26 @@ public class VersionCompatibility {
             }
 
             NBTTagList movingPathLegacy = compound.getTagList("MovingPath", Constants.NBT.TAG_LIST);
+            NBTTagList MovingPathNew = new NBTTagList();
 
-            if (movingPathLegacy.tagCount() > 0) {
-                NBTTagList MovingPathNew = new NBTTagList();
+            while (movingPathLegacy.tagCount() > 0) {
+                NBTTagList array = (NBTTagList) movingPathLegacy.removeTag(0);
 
-                for (int i = movingPathLegacy.tagCount() - 1; i >= 0; i--) {
-                    NBTTagList array = (NBTTagList) movingPathLegacy.removeTag(i);
-
-                    if (array.tagCount() == 3) {
-                        int x = array.getCompoundTagAt(0).getInteger("Slot");
-                        int y = array.getCompoundTagAt(1).getInteger("Slot");
-                        int z = array.getCompoundTagAt(2).getInteger("Slot");
-
-                        NBTTagCompound pathPoint = new NBTTagCompound();
-                        pathPoint.setIntArray("Array", new int[]{x, y, z});
-
-                        MovingPathNew.appendTag(pathPoint);
-                    }
+                if (array.tagCount() != 3) {
+                    continue;
                 }
 
-                NBTTagList finalList = new NBTTagList();
-                for (int i = MovingPathNew.tagCount() - 1; i >= 0; i--) {
-                    finalList.appendTag(MovingPathNew.getCompoundTagAt(i));
-                }
+                int x = array.getCompoundTagAt(0).getInteger("Slot");
+                int y = array.getCompoundTagAt(1).getInteger("Slot");
+                int z = array.getCompoundTagAt(2).getInteger("Slot");
 
-                compound.setTag("MovingPathNew", finalList);
+                NBTTagCompound pathPoint = new NBTTagCompound();
+                pathPoint.setIntArray("Array", new int[]{x, y, z});
+                MovingPathNew.appendTag(pathPoint);
+            }
+
+            if (MovingPathNew.tagCount() > 0) {
+                compound.setTag("MovingPathNew", MovingPathNew);
             }
 
             if (ConfigExperimental.useLegacyRender) {
