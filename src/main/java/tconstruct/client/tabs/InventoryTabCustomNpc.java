@@ -33,7 +33,7 @@ public class InventoryTabCustomNpc extends AbstractTab {
                 tabHelper();
             }
         };
-        t.start();
+        Minecraft.getMinecraft().func_152344_a(t);
     }
 
     @Override
